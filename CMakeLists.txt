@@ -13,5 +13,8 @@ include(GNUInstallDirs)
 
 option(BUILD_SHARED_LIBS "build libraries as shared" ON)
 
+find_package(fmt CONFIG REQUIRED)
+find_package(imgui CONFIG REQUIRED)
+
 add_subdirectory(libs)
 add_subdirectory(app)

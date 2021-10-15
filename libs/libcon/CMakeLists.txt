@@ -14,7 +14,7 @@ add_library(libcon
 target_link_libraries(libcon PRIVATE asio::asio)
 generate_export_header(libcon EXPORT_FILE_NAME libcon_export.hpp)
 target_include_directories(libcon PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/libcon>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
     $<INSTALL_INTERFACE:include>
 )

@@ -1,6 +1,8 @@
 #pragma once
 #include <imgui.h>
 
+namespace dev::gui
+{
 struct Fonts
 {
     enum class FontType
@@ -15,3 +17,5 @@ struct Fonts
   private:
     static void loadFont(FontType type);
 };
+
+} // namespace dev::gui

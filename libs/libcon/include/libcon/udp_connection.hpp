@@ -1,6 +1,8 @@
 #pragma once
+#include <string>
 #include "connection.hpp"
 #include "manager.hpp"
+
 namespace dev::con
 {
 class LIBCON_EXPORT UdpConnection : public Connection

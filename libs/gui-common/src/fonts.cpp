@@ -1,6 +1,7 @@
-#include "fonts.hpp"
+#include "gui-common/fonts.hpp"
 #include <filesystem>
-
+namespace dev::gui
+{
 ImFont *Fonts::default_font = nullptr;
 ImFont *Fonts::roboto = nullptr;
 
@@ -20,3 +21,5 @@ void Fonts::loadFont(FontType type)
         break;
     }
 }
+
+} // namespace dev::gui

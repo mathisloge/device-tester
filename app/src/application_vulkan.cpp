@@ -7,7 +7,7 @@
 #include <stdio.h>  // printf, fprintf
 #include <stdlib.h> // abort
 #include <vulkan/vulkan.h>
-#include "fonts.hpp"
+#include <gui-common/fonts.hpp>
 
 //#define IMGUI_UNLIMITED_FRAME_RATE
 #ifdef _DEBUG
@@ -431,7 +431,7 @@ bool ApplicationVulkan::setup()
     init_info.CheckVkResultFn = check_vk_result;
     ImGui_ImplVulkan_Init(&init_info, wd_->RenderPass);
 
-    Fonts::loadAll();
+    dev::gui::Fonts::loadAll();
 
     // Upload Fonts
     {
