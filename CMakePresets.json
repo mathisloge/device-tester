@@ -15,7 +15,7 @@
             "name": "vcpkg",
             "hidden": true,
             "cacheVariables": {
-                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/vcpkg"
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/vcpkg/scripts/buildsystems/vcpkg.cmake"
             }
         },
         {
@@ -89,10 +89,7 @@
             "hidden": true,
             "inherits": [
                 "use-msvc-cl",
-                "windows-arch-x64",
-                "ninja",
-                "vcpkg",
-                "binaryDir"
+                "windows-arch-x64"
             ],
             "vendor": {
                 "microsoft.com/VisualStudioSettings/CMake/1.0": {
@@ -103,19 +100,30 @@
             }
         },
         {
+            "name": "defaults",
+            "hidden": true,
+            "inherits": [
+                "ninja",
+                "vcpkg",
+                "binaryDir"
+            ]
+        },
+        {
             "name": "windows-64-default-debug",
             "displayName": "Windows x64 Debug",
             "inherits": [
-                "windows-default",
-                "debug-build"
+                "windows-x64-default",
+                "debug-build",
+                "defaults"
             ]
         },
         {
             "name": "windows-64-default-release",
             "displayName": "Windows x64 Release",
             "inherits": [
-                "windows-default",
-                "release-build"
+                "windows-x64-default",
+                "release-build",
+                "defaults"
             ]
         }
     ],

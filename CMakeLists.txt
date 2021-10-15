@@ -9,4 +9,9 @@ get_git_head_revision(GIT_REFSPEC GIT_REF)
 message(STATUS "GIT_REF: ${GIT_REF}")
 message(STATUS "GIT_REFSPEC: ${GIT_REFSPEC}")
 
+include(GNUInstallDirs)
+
+option(BUILD_SHARED_LIBS "build libraries as shared" ON)
+
+add_subdirectory(libs)
 add_subdirectory(app)
