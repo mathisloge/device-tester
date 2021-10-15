@@ -3,7 +3,7 @@ project(libcon)
 find_package(asio CONFIG REQUIRED)
 add_library(libcon
     src/connection.cpp
-    src/tcp_connection.cpp
+    src/tcp_client.cpp
     src/udp_connection.cpp
     src/basic_client.hpp
     src/basic_client.cpp

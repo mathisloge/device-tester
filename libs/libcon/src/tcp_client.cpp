@@ -1,10 +1,10 @@
-#include "tcp_connection.hpp"
+#include "tcp_client.hpp"
 #include "basic_client.hpp"
 #include "manager_impl.hpp"
 namespace dev::con
 {
 
-class TcpConnection::Impl final : public BasicClient
+class TcpClient::Impl final : public BasicClient
 {
   public:
     Impl(Manager &manager)
@@ -12,11 +12,11 @@ class TcpConnection::Impl final : public BasicClient
     {}
 };
 
-TcpConnection::TcpConnection(Manager &manager)
+TcpClient::TcpClient(Manager &manager)
     : impl_{new Impl{manager}}
 {}
 
-TcpConnection::~TcpConnection()
+TcpClient::~TcpClient()
 {
     delete impl_;
 }

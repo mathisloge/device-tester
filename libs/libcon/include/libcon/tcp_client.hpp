@@ -4,10 +4,10 @@
 
 namespace dev::con
 {
-class LIBCON_EXPORT TcpConnection : public Connection
+class LIBCON_EXPORT TcpClient : public Connection
 {
-    TcpConnection(Manager &manager);
-    virtual ~TcpConnection();
+    TcpClient(Manager &manager);
+    virtual ~TcpClient();
 
   private:
     class Impl;
