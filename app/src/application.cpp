@@ -6,6 +6,7 @@
 
 Application::Application()
     : run_render_loop_{false}
+    , win_{nullptr}
 {}
 Application::~Application()
 {}
@@ -39,6 +40,14 @@ void Application::menuBar()
         }
         if (ImGui::BeginMenu("Connections"))
         {
+            if (ImGui::BeginMenu("New"))
+            {
+                if (ImGui::MenuItem("Tcp Client"))
+                {
+                    win_ = std::make_unique<dev::gui::TcpClientWin>(std::make_shared<dev::con::TcpClient>(manager_));
+                }
+                ImGui::EndMenu();
+            }
 
             ImGui::EndMenu();
         }
@@ -49,6 +58,8 @@ void Application::menuBar()
 void Application::renderImgui()
 {
     menuBar();
+    if (win_)
+        win_->update();
     ImGui::ShowDemoWindow();
 }
 

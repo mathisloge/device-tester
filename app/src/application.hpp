@@ -1,5 +1,7 @@
 #pragma once
 #include <string>
+#include <libcon/manager.hpp>
+#include <gui-libcon/tcp_client_win.hpp>
 class Application
 {
   public:
@@ -19,6 +21,8 @@ class Application
 
   private:
     bool run_render_loop_;
+    dev::con::Manager manager_;
+    std::unique_ptr<dev::gui::TcpClientWin> win_;
 
   protected:
     static std::string getTitle();

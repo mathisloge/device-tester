@@ -14,7 +14,7 @@ target_link_libraries(device-tester PRIVATE
     SDL2::SDL2main
     imgui::imgui
     gui-common
-    libcon
+    gui-libcon
 )
 configure_file (
     "${CMAKE_CURRENT_SOURCE_DIR}/version.hpp.in" 

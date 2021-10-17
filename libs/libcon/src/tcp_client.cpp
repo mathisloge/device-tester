@@ -20,4 +20,7 @@ TcpClient::~TcpClient()
 {
     delete impl_;
 }
+
+void TcpClient::setOptions(const Options &opts)
+{}
 } // namespace dev::con
