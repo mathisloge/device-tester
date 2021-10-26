@@ -10,14 +10,15 @@ class Window
     virtual ~Window();
 
     void update();
-    void setOpen(bool is_open);
+    bool open() const;
+    bool &open();
 
   protected:
     virtual void updateContent() = 0;
 
   protected:
     std::string title_;
-    bool state_;
+    bool visibile_;
     int flags_;
 };
 

@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <libcon/manager.hpp>
-#include <gui-libcon/tcp_client_win.hpp>
+#include <gui-libcon/connection_manager_win.hpp>
 class Application
 {
   public:
@@ -21,8 +21,8 @@ class Application
 
   private:
     bool run_render_loop_;
-    dev::con::Manager manager_;
-    std::unique_ptr<dev::gui::TcpClientWin> win_;
+    std::shared_ptr<dev::con::Manager> manager_;
+    dev::gui::ConnectionManagerWin manager_win_;
 
   protected:
     static std::string getTitle();

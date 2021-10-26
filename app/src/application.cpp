@@ -6,7 +6,8 @@
 
 Application::Application()
     : run_render_loop_{false}
-    , win_{nullptr}
+    , manager_{std::make_shared<dev::con::Manager>()}
+    , manager_win_{manager_}
 {}
 Application::~Application()
 {}
@@ -31,6 +32,7 @@ void Application::menuBar()
     {
         if (ImGui::BeginMenu("File"))
         {
+            ImGui::MenuItem("Connection Manager", "", &manager_win_.open());
             ImGui::Separator();
             if (ImGui::MenuItem("Exit"))
             {
@@ -43,9 +45,7 @@ void Application::menuBar()
             if (ImGui::BeginMenu("New"))
             {
                 if (ImGui::MenuItem("Tcp Client"))
-                {
-                    win_ = std::make_unique<dev::gui::TcpClientWin>(std::make_shared<dev::con::TcpClient>(manager_));
-                }
+                {}
                 ImGui::EndMenu();
             }
 
@@ -58,8 +58,9 @@ void Application::menuBar()
 void Application::renderImgui()
 {
     menuBar();
-    if (win_)
-        win_->update();
+
+    manager_win_.update();
+
     ImGui::ShowDemoWindow();
 }
 
