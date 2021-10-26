@@ -5,16 +5,14 @@ namespace dev::con
 {
 
 Manager::Manager()
-    : impl_{new ManagerImpl{}}
+    : impl_{std::make_unique<ManagerImpl>()}
 {}
 
 Manager::~Manager()
-{
-    delete impl_;
-}
+{}
 
-ManagerImpl *Manager::impl()
+ManagerImpl &Manager::impl()
 {
-    return impl_;
+    return *impl_;
 }
 } // namespace dev::con

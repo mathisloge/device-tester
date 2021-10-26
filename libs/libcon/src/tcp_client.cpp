@@ -8,19 +8,20 @@ class TcpClient::Impl final : public BasicClient
 {
   public:
     Impl(Manager &manager)
-        : BasicClient{manager.impl()->ctx()}
+        : BasicClient{manager.impl().ctx()}
     {}
 };
 
 TcpClient::TcpClient(Manager &manager)
-    : impl_{new Impl{manager}}
+    : impl_{std::make_unique<Impl>(manager)}
 {}
 
 TcpClient::~TcpClient()
-{
-    delete impl_;
-}
+{}
 
 void TcpClient::setOptions(const Options &opts)
+{}
+
+void TcpClient::send(std::span<uint8_t> data)
 {}
 } // namespace dev::con

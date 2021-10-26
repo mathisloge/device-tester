@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 #include "connection.hpp"
 #include "manager.hpp"
 
@@ -16,11 +17,12 @@ class LIBCON_EXPORT TcpClient : public Connection
   public:
     TcpClient(Manager &manager);
     virtual ~TcpClient();
-
     void setOptions(const Options &opts);
+
+    void send(std::span<uint8_t> data) override;
 
   private:
     class Impl;
-    Impl *impl_;
+    std::unique_ptr<Impl> impl_;
 };
 } // namespace dev::con

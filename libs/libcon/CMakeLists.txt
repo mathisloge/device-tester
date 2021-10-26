@@ -1,15 +1,16 @@
 project(libcon)
 
 find_package(asio CONFIG REQUIRED)
-add_library(libcon
-    src/connection.cpp
-    src/tcp_client.cpp
-    src/udp_connection.cpp
-    src/basic_client.hpp
-    src/basic_client.cpp
+add_library(libcon    
     src/manager.cpp
     src/manager_impl.hpp
     src/manager_impl.cpp
+    src/basic_client.hpp
+    src/basic_client.cpp
+    src/connection.cpp
+    src/tcp_client.cpp
+    src/udp_connection.cpp
+    src/serial.cpp
 )
 target_link_libraries(libcon PRIVATE asio::asio)
 generate_export_header(libcon EXPORT_FILE_NAME libcon_export.hpp)

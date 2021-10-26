@@ -19,11 +19,12 @@ class LIBCON_EXPORT UdpConnection : public Connection
   public:
     UdpConnection(Manager &manager);
     virtual ~UdpConnection();
-
     void setOptions(const Options &opts);
+
+    void send(std::span<uint8_t> data) override;
 
   private:
     class Impl;
-    Impl *impl_;
+    std::unique_ptr<Impl> impl_;
 };
 } // namespace dev::con

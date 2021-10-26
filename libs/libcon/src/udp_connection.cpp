@@ -9,7 +9,7 @@ class UdpConnection::Impl final : public BasicClient
 
   public:
     Impl(Manager &manager)
-        : BasicClient{manager.impl()->ctx()}
+        : BasicClient{manager.impl().ctx()}
         , socket_{strand_}
     {}
 
@@ -22,11 +22,12 @@ class UdpConnection::Impl final : public BasicClient
 };
 
 UdpConnection::UdpConnection(Manager &manager)
-    : impl_{new Impl{manager}}
+    : impl_{std::make_unique<Impl>(manager)}
 {}
 
 UdpConnection::~UdpConnection()
-{
-    delete impl_;
-}
+{}
+
+void UdpConnection::send(std::span<uint8_t> data)
+{}
 } // namespace dev::con
