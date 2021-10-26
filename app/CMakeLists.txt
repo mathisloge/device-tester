@@ -6,6 +6,9 @@ add_executable(device-tester
     src/application.cpp
     src/application_vulkan.hpp
     src/application_vulkan.cpp
+
+    src/windows/raw_data_win.hpp
+    src/windows/raw_data_win.cpp
 )
 
 target_link_libraries(device-tester PRIVATE

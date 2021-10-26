@@ -7,10 +7,12 @@ struct Fonts
 {
     enum class FontType
     {
-        roboto
+        roboto,
+        roboto_mono
     };
     static ImFont *default_font;
     static ImFont *roboto;
+    static ImFont *roboto_mono;
 
     static void loadAll();
 

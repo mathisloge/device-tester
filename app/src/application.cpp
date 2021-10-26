@@ -60,6 +60,7 @@ void Application::renderImgui()
     menuBar();
 
     manager_win_.update();
+    data_win_.update();
 
     ImGui::ShowDemoWindow();
 }
