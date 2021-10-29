@@ -3,11 +3,16 @@
 namespace dev::gui
 {
 TcpClientWin::TcpClientWin(const std::shared_ptr<con::TcpClient> &client)
-    : Window{fmt::format("TcpClient###TCPCLIENT{}", reinterpret_cast<std::uintptr_t>(client.get()))}
-    , client_{client}
+    : client_{client}
 {}
 TcpClientWin::~TcpClientWin()
 {}
-void TcpClientWin::updateContent()
+
+const std::string &TcpClientWin::title() const
+{
+    return client_->readableName().empty() ? client_->connectionReadableName() : client_->readableName();
+}
+void TcpClientWin::drawTabSettings()
 {}
+
 } // namespace dev::gui

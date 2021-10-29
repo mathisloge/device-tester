@@ -28,6 +28,7 @@ class RawDataWin final : public Window
     std::string input_buf_;
 
     std::vector<Data> data_;
+    bool auto_scroll_;
 };
 
 } // namespace dev::gui

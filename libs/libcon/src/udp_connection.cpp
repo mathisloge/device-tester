@@ -13,6 +13,9 @@ class UdpConnection::Impl final : public BasicClient
         , socket_{strand_}
     {}
 
+  public:
+    std::string connection_str_;
+
   private:
     udp::socket socket_;
     std::array<uint8_t, 65535> buffer_rx_;
@@ -30,4 +33,9 @@ UdpConnection::~UdpConnection()
 
 void UdpConnection::send(std::span<uint8_t> data)
 {}
+
+const std::string &UdpConnection::connectionReadableName() const
+{
+  return impl_->connection_str_;
+}
 } // namespace dev::con

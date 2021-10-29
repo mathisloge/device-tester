@@ -10,6 +10,9 @@ class TcpClient::Impl final : public BasicClient
     Impl(Manager &manager)
         : BasicClient{manager.impl().ctx()}
     {}
+
+  public:
+    std::string connection_str_;
 };
 
 TcpClient::TcpClient(Manager &manager)
@@ -24,4 +27,9 @@ void TcpClient::setOptions(const Options &opts)
 
 void TcpClient::send(std::span<uint8_t> data)
 {}
+
+const std::string &TcpClient::connectionReadableName() const
+{
+    return impl_->connection_str_;
+}
 } // namespace dev::con

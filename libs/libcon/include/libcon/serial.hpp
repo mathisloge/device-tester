@@ -41,9 +41,11 @@ class LIBCON_EXPORT Serial : public Connection
     Serial(Manager &manager);
     virtual ~Serial();
 
-    void send(std::span<uint8_t> data) override;
     const Options &options() const;
     void setOptions(const Options &opts);
+
+    void send(std::span<uint8_t> data) override;
+    const std::string &connectionReadableName() const override;
 
   private:
     class Impl;

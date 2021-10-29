@@ -1,4 +1,5 @@
 #include "libcon/serial.hpp"
+#include <fmt/format.h>
 #include "basic_client.hpp"
 #include "manager_impl.hpp"
 
@@ -57,11 +58,14 @@ class Serial::Impl final : public BasicClient
                     return PT::hardware;
                 }
             }(opts_.flow_control)));
+
+        connection_str_ = fmt::format("serial://{}@{}", opts_.port, opts_.baud_rate);
     }
 
   public:
     Options opts_;
     asio::serial_port serial_;
+    std::string connection_str_;
 };
 
 Serial::Serial(Manager &manager)
@@ -81,6 +85,10 @@ const Serial::Options &Serial::options() const
 void Serial::setOptions(const Options &opts)
 {
     impl_->opts_ = opts;
+}
+const std::string &Serial::connectionReadableName() const
+{
+    return impl_->connection_str_;
 }
 
 } // namespace dev::con
