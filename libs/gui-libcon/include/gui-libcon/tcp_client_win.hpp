@@ -18,5 +18,6 @@ class TcpClientWin final : public ConnectionWin
 
   private:
     std::shared_ptr<con::TcpClient> client_;
+    con::TcpClient::Options opts_;
 };
 } // namespace dev::gui

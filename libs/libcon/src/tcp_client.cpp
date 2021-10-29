@@ -30,9 +30,12 @@ class TcpClient::Impl final : public BasicClient
     {
         asio::io_context resolver_ctx;
         tcp::resolver resolver{resolver_ctx};
-        endpoints_ = resolver.resolve(opts_.server, fmt::format("{}", opts_.server_port));
-        asio::async_connect(
-            socket_, endpoints_, std::bind(&Impl::handleConnect, this, std::placeholders::_1, std::placeholders::_2));
+        asio::error_code err_code;
+        endpoints_ = resolver.resolve(opts_.server, fmt::format("{}", opts_.server_port), err_code);
+        if (!err_code)
+            asio::async_connect(socket_,
+                                endpoints_,
+                                std::bind(&Impl::handleConnect, this, std::placeholders::_1, std::placeholders::_2));
     }
 
     void disconnect()
@@ -92,8 +95,10 @@ void TcpClient::setOptions(const Options &opts)
 {
     impl_->setOptions(opts);
     if (impl_->isConnected())
+    {
         impl_->disconnect();
-    impl_->connect();
+        impl_->connect();
+    }
 }
 
 const TcpClient::Options &TcpClient::options() const
