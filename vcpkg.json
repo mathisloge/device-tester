@@ -1,29 +1,30 @@
 {
-    "name": "device-tester",
-    "version-semver": "0.1.0",
-    "dependencies": [
-        {
-            "name": "imgui",
-            "features": [
-                "docking-experimental",
-                "sdl2-binding",
-                "vulkan-binding"
-            ]
-        },
-        "implot",
-        {
-            "name": "sdl2",
-            "features": [
-                "vulkan"
-            ]
-        },
-        "fmt",
-        "spdlog",
-        {
-            "name": "asio",
-            "features": [
-                "openssl"
-            ]
-        }
-    ]
+  "name": "device-tester",
+  "version-semver": "0.1.0",
+  "dependencies": [
+    {
+      "name": "asio",
+      "features": [
+        "openssl"
+      ]
+    },
+    "fmt",
+    {
+      "name": "imgui",
+      "features": [
+        "docking-experimental",
+        "freetype",
+        "sdl2-binding",
+        "vulkan-binding"
+      ]
+    },
+    "implot",
+    {
+      "name": "sdl2",
+      "features": [
+        "vulkan"
+      ]
+    },
+    "spdlog"
+  ]
 }
