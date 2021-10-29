@@ -40,17 +40,6 @@ void Application::menuBar()
             }
             ImGui::EndMenu();
         }
-        if (ImGui::BeginMenu("Connections"))
-        {
-            if (ImGui::BeginMenu("New"))
-            {
-                if (ImGui::MenuItem("Tcp Client"))
-                {}
-                ImGui::EndMenu();
-            }
-
-            ImGui::EndMenu();
-        }
         ImGui::EndMainMenuBar();
     }
 }

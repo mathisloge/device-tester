@@ -1,4 +1,5 @@
 #pragma once
+#include <functional>
 #include <memory>
 #include <span>
 #include <string_view>
@@ -32,4 +33,6 @@ class LIBCON_EXPORT Connection
     class BaseImpl;
     std::unique_ptr<BaseImpl> base_impl_;
 };
+
+using onData = std::function<void(std::span<uint8_t>)>;
 } // namespace dev::con

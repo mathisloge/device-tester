@@ -29,4 +29,5 @@ void Connection::setReadableName(std::string_view name)
 {
     base_impl_->readable_name_ = name;
 }
+
 } // namespace dev::con

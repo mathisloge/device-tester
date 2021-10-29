@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 #include <string>
 #include "connection.hpp"
 #include "manager.hpp"
@@ -15,10 +16,14 @@ class LIBCON_EXPORT TcpClient : public Connection
     };
 
   public:
-    TcpClient(Manager &manager);
+    TcpClient(Manager &manager, const onData &read_cb);
     virtual ~TcpClient();
 
     void setOptions(const Options &opts);
+    const Options &options() const;
+    bool isConnected() const;
+    void connect();
+    void disconnect();
 
     void send(std::span<uint8_t> data) override;
     const std::string &connectionReadableName() const override;

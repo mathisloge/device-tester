@@ -1,10 +1,11 @@
 #include "gui-libcon/connection_manager_win.hpp"
 #include <fmt/format.h>
 #include <imgui.h>
+#include "gui-libcon/tcp_client_win.hpp"
 namespace dev::gui
 {
 ConnectionManagerWin::ConnectionManagerWin(const std::shared_ptr<con::Manager> &manager)
-    : Window{fmt::format("Connection Manager")}
+    : Window{fmt::format("Connection Manager"), ImGuiWindowFlags_MenuBar}
     , manager_{manager}
     , current_{nullptr}
 {}
@@ -13,14 +14,28 @@ ConnectionManagerWin::~ConnectionManagerWin()
 
 void ConnectionManagerWin::updateContent()
 {
+    if (ImGui::BeginMenuBar())
+    {
+        if (ImGui::BeginMenu("Connection"))
+        {
+            if (ImGui::MenuItem("TCP"))
+            {
+                current_ = connections_.emplace_back(std::make_shared<TcpClientWin>(*manager_));
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenuBar();
+    }
     {
         ImGui::BeginChild("left pane", ImVec2(150, 0), true);
         for (const auto &c : connections_)
         {
+            ImGui::PushID(&c);
             if (ImGui::Selectable(c->title().c_str(), c == current_))
             {
                 current_ = c;
             }
+            ImGui::PopID();
         }
         ImGui::EndChild();
     }

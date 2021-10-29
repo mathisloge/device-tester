@@ -9,11 +9,12 @@ namespace dev::gui
 class TcpClientWin final : public ConnectionWin
 {
   public:
-    explicit TcpClientWin(const std::shared_ptr<con::TcpClient> &client);
+    explicit TcpClientWin(con::Manager &manager);
     ~TcpClientWin();
 
     const std::string &title() const override;
     void drawTabSettings() override;
+    void onData(std::span<uint8_t> data);
 
   private:
     std::shared_ptr<con::TcpClient> client_;
