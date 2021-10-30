@@ -14,7 +14,9 @@ class TcpClient::Impl final : public BasicClient
   public:
     Impl(Manager &manager, const onData &read_cb)
         : BasicClient{manager.impl().ctx()}
+        , opts_{}
         , socket_{strand_}
+        , resolver_{strand_}
         , read_cb_{read_cb}
     {}
 
@@ -31,11 +33,24 @@ class TcpClient::Impl final : public BasicClient
         asio::io_context resolver_ctx;
         tcp::resolver resolver{resolver_ctx};
         asio::error_code err_code;
-        endpoints_ = resolver.resolve(opts_.server, fmt::format("{}", opts_.server_port), err_code);
-        if (!err_code)
-            asio::async_connect(socket_,
-                                endpoints_,
-                                std::bind(&Impl::handleConnect, this, std::placeholders::_1, std::placeholders::_2));
+        spdlog::debug("Connecting to: {}:{}", opts_.server, opts_.server_port);
+        resolver_.async_resolve(
+            opts_.server,
+            fmt::format("{}", opts_.server_port),
+            [this](const asio::error_code &ec, tcp::resolver::results_type endpoints) {
+                if (!ec)
+                {
+                    asio::async_connect(
+                        socket_,
+                        endpoints,
+                        std::bind(&Impl::handleConnect, this, std::placeholders::_1, std::placeholders::_2));
+                }
+                else
+                {
+                    spdlog::error("ERROR: {}", ec.message());
+                    disconnect();
+                }
+            });
     }
 
     void disconnect()
@@ -47,9 +62,16 @@ class TcpClient::Impl final : public BasicClient
     void handleConnect(const std::error_code &ec, const tcp::endpoint &endpoint)
     {
         if (!ec)
+        {
+            spdlog::debug("[tcp] {}:{}", endpoint.address().to_string(), endpoint.port());
+            connection_str_ = fmt::format("[tcp] {}:{}", endpoint.address().to_string(), endpoint.port());
             startRead();
+        }
         else
+        {
+            spdlog::debug("ERROR: {}", ec.message());
             disconnect();
+        }
     }
     void startRead()
     {
@@ -68,7 +90,7 @@ class TcpClient::Impl final : public BasicClient
         }
         else
         {
-            SPDLOG_ERROR("Error while receiving {}", error.message());
+            spdlog::error("Error while receiving {}", error.message());
             disconnect();
         }
     }
@@ -78,6 +100,7 @@ class TcpClient::Impl final : public BasicClient
     std::string connection_str_;
 
   private:
+    tcp::resolver resolver_;
     onData read_cb_;
     std::array<uint8_t, 65535> buffer_rx_;
     tcp::socket socket_;

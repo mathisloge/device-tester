@@ -1,7 +1,7 @@
 project(libcon)
 
 find_package(asio CONFIG REQUIRED)
-add_library(libcon    
+add_library(libcon STATIC 
     src/manager.cpp
     src/manager_impl.hpp
     src/manager_impl.cpp
@@ -9,6 +9,7 @@ add_library(libcon
     src/basic_client.cpp
     src/connection.cpp
     src/tcp_client.cpp
+    src/tcp_server.cpp
     src/udp_connection.cpp
     src/serial.cpp
 )

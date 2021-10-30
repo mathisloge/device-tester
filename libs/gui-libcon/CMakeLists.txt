@@ -2,6 +2,7 @@ project(gui-libcon)
 
 add_library(gui-libcon STATIC
     src/tcp_client_win.cpp
+    src/tcp_server_win.cpp
     src/connection_manager_win.cpp
     src/connection_win.cpp
 )

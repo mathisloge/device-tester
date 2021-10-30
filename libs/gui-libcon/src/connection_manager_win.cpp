@@ -2,6 +2,7 @@
 #include <fmt/format.h>
 #include <imgui.h>
 #include "gui-libcon/tcp_client_win.hpp"
+#include "gui-libcon/tcp_server_win.hpp"
 namespace dev::gui
 {
 ConnectionManagerWin::ConnectionManagerWin(const std::shared_ptr<con::Manager> &manager)
@@ -21,6 +22,10 @@ void ConnectionManagerWin::updateContent()
             if (ImGui::MenuItem("TCP"))
             {
                 current_ = connections_.emplace_back(std::make_shared<TcpClientWin>(*manager_));
+            }
+            if (ImGui::MenuItem("TCP-Server"))
+            {
+                current_ = connections_.emplace_back(std::make_shared<TcpServerWin>(*manager_));
             }
             ImGui::EndMenu();
         }

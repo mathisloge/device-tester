@@ -15,7 +15,7 @@ TcpClientWin::~TcpClientWin()
 const std::string &TcpClientWin::title() const
 {
     static const std::string kEmptyName = "[NEW] TCP";
-    if (client_->readableName().empty() && client_->readableName().empty())
+    if (client_->readableName().empty() && client_->connectionReadableName().empty())
         return kEmptyName;
     return client_->readableName().empty() ? client_->connectionReadableName() : client_->readableName();
 }
@@ -37,7 +37,10 @@ void TcpClientWin::drawTabSettings()
     else
     {
         if (ImGui::Button("Connect"))
+        {
+            client_->setOptions(opts_);
             client_->connect();
+        }
     }
 
     ImGui::SameLine();
