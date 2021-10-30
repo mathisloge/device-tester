@@ -1,5 +1,6 @@
 #include "libcon/tcp_server.hpp"
-#include <unordered_set>
+#include <queue>
+#include <set>
 #include <spdlog/spdlog.h>
 #include "manager_impl.hpp"
 namespace dev::con
@@ -19,15 +20,20 @@ class TcpServerClient : public ITcpServerClient, public std::enable_shared_from_
 
   private:
     void startRead();
+    void startWrite();
 
   private:
+    std::atomic_bool write_in_progress_;
+    bool do_run_;
     tcp::socket socket_;
     TcpServerManager &manager_;
     std::array<uint8_t, 65535> rx_buffer_;
     std::string connection_name_;
+    std::mutex tx_buffer_mtx_;
+    std::queue<std::vector<uint8_t>> tx_buffer_;
 };
 using TcpServerClientPtr = std::shared_ptr<TcpServerClient>;
-using TcpServerClients = std::unordered_set<TcpServerClientPtr>;
+using TcpServerClients = std::set<TcpServerClientPtr>;
 
 class TcpServerManager final
 {
@@ -45,8 +51,8 @@ class TcpServerManager final
     }
     void stop(TcpServerClientPtr client)
     {
-        connections_.erase(client);
         client->stop();
+        connections_.erase(client);
     }
     void stopAll()
     {
@@ -111,7 +117,10 @@ class TcpServer::Impl final
     void stop()
     {
         if (acceptor_.is_open())
+        {
+            acceptor_.cancel();
             acceptor_.close();
+        }
         manager_.stopAll();
     }
     void setOptions(const Options &opts)
@@ -135,8 +144,8 @@ class TcpServer::Impl final
             if (!ec)
             {
                 manager_.start(std::make_shared<TcpServerClient>(std::move(socket), manager_));
+                startAccept();
             }
-            startAccept();
         });
     }
 
@@ -213,15 +222,21 @@ int TcpServer::numberOfConnectedClients() const
 
 ////! CLIENT
 TcpServerClient::TcpServerClient(tcp::socket socket, TcpServerManager &manager)
-    : socket_{std::move(socket)}
+    : do_run_{true}
+    , socket_{std::move(socket)}
     , manager_{manager}
 {}
 void TcpServerClient::start()
 {
+    do_run_ = true;
     startRead();
+    std::string t{"hallo"};
+    std::span<uint8_t> x((uint8_t *)t.data(), t.size());
+    send(x);
 }
 void TcpServerClient::stop()
 {
+    do_run_ = false;
     socket_.close();
 }
 void TcpServerClient::shutdown()
@@ -233,24 +248,52 @@ void TcpServerClient::shutdown()
 void TcpServerClient::startRead()
 {
     auto self{shared_from_this()};
-    socket_.async_read_some(asio::buffer(rx_buffer_), [this, self](asio::error_code ec, std::size_t bytes_transferred) {
+    socket_.async_receive(asio::buffer(rx_buffer_), [self](asio::error_code ec, std::size_t bytes_transferred) {
         if (!ec)
         {
             /*handler_.processData(
                 shared_from_this(),
                 std::span<uint8_t>(rx_buffer_.begin(), rx_buffer_.begin() +
                bytes_transferred));*/
-            startRead();
+            if (self->do_run_)
+                self->startRead();
         }
         else if (ec != asio::error::operation_aborted)
         {
-            manager_.stop(shared_from_this());
+            spdlog::error("TcpServerClient: {}", ec.message());
+            if (self->do_run_)
+                self->manager_.stop(self);
         }
     });
 }
 
 void TcpServerClient::send(std::span<uint8_t> data)
-{}
+{
+    {
+        std::unique_lock<std::mutex> l{tx_buffer_mtx_};
+        tx_buffer_.emplace(std::vector<uint8_t>{data.begin(), data.end()});
+    }
+    startWrite();
+}
+
+void TcpServerClient::startWrite()
+{
+    if (write_in_progress_ || tx_buffer_.size() == 0)
+        return;
+    write_in_progress_ = true;
+    auto self(shared_from_this());
+    socket_.async_send(asio::buffer(tx_buffer_.front()), [self](asio::error_code ec, std::size_t written) {
+        if (!ec)
+        {
+            {
+                std::unique_lock<std::mutex> l{self->tx_buffer_mtx_};
+                self->tx_buffer_.pop();
+                self->write_in_progress_ = false;
+            }
+            self->startWrite();
+        }
+    });
+}
 
 const std::string &TcpServerClient::connectionReadableName() const
 {

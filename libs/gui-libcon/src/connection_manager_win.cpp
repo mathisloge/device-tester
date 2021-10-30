@@ -3,6 +3,7 @@
 #include <imgui.h>
 #include "tcp_client_win.hpp"
 #include "tcp_server_win.hpp"
+#include <gui-common/IconsFontAwesome4.hpp>
 namespace dev::gui
 {
 ConnectionManagerWin::ConnectionManagerWin(WindowManager &win_manager, const std::shared_ptr<con::Manager> &manager)
@@ -53,7 +54,7 @@ void ConnectionManagerWin::updateContent()
         ImGui::BeginChild("item view");
         ImGui::Text(current_->title().c_str());
         ImGui::SameLine();
-        if (ImGui::Button("DEL"))
+        if (ImGui::Button(ICON_FA_TRASH))
         {
             connections_.erase(current_);
             current_ = nullptr;
