@@ -15,6 +15,7 @@ class TcpServerWin final : public ConnectionWin
     const std::string &title() const override;
     void drawTabSettings() override;
     void drawTabDetails() override;
+    void drawCustomTabs() override;
 
   private:
     std::shared_ptr<con::TcpServer> server_;

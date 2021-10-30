@@ -72,6 +72,7 @@ void ConnectionManagerWin::updateContent()
                 current_->drawTabDetails();
                 ImGui::EndTabItem();
             }
+            current_->drawCustomTabs();
             ImGui::EndTabBar();
         }
         ImGui::EndChild();

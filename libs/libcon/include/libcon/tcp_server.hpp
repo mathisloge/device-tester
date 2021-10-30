@@ -34,6 +34,7 @@ class LIBCON_EXPORT TcpServer
 
     void sendToAll(std::span<uint8_t> data);
     int numberOfConnectedClients() const;
+    void eachClient(const std::function<void(ITcpServerClient &client)> &pred);
 
   private:
     class Impl;

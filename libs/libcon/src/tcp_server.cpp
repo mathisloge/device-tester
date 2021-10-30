@@ -219,6 +219,13 @@ int TcpServer::numberOfConnectedClients() const
 {
     return impl_->manager_.clients().size();
 }
+void TcpServer::eachClient(const std::function<void(ITcpServerClient &client)> &pred)
+{
+    for (const auto &c : impl_->manager_.clients())
+    {
+        pred(*c);
+    }
+}
 
 ////! CLIENT
 TcpServerClient::TcpServerClient(tcp::socket socket, TcpServerManager &manager)
@@ -230,6 +237,8 @@ void TcpServerClient::start()
 {
     do_run_ = true;
     startRead();
+    const auto& remote_endp = socket_.remote_endpoint();
+    connection_name_ = fmt::format("{}:{}", remote_endp.address().to_string(), remote_endp.port());
     std::string t{"hallo"};
     std::span<uint8_t> x((uint8_t *)t.data(), t.size());
     send(x);

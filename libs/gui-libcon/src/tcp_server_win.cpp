@@ -71,4 +71,24 @@ void TcpServerWin::drawTabDetails()
     ImGui::Text("Number of connected clients: %i", server_->numberOfConnectedClients());
 }
 
+void TcpServerWin::drawCustomTabs()
+{
+    if (ImGui::BeginTabItem("Clients"))
+    {
+        server_->eachClient([](const con::ITcpServerClient &c) {
+            const auto &title = c.readableName().empty() ? c.connectionReadableName() : c.readableName();
+            ImGui::PushID(&c);
+            if (!ImGui::CollapsingHeader(title.c_str()))
+            {
+                ImGui::PopID();
+                return;
+            }
+
+            ImGui::BulletText(title.c_str());
+            ImGui::PopID();
+        });
+        ImGui::EndTabItem();
+    }
+}
+
 } // namespace dev::gui
