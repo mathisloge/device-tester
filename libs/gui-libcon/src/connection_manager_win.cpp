@@ -22,11 +22,11 @@ void ConnectionManagerWin::updateContent()
         {
             if (ImGui::MenuItem("TCP"))
             {
-                current_ = connections_.emplace_back(std::make_shared<TcpClientWin>(*manager_));
+                current_ = *connections_.emplace(std::make_shared<TcpClientWin>(*manager_)).first;
             }
             if (ImGui::MenuItem("TCP-Server"))
             {
-                current_ = connections_.emplace_back(std::make_shared<TcpServerWin>(*manager_));
+                current_ = *connections_.emplace(std::make_shared<TcpServerWin>(*manager_)).first;
             }
             ImGui::EndMenu();
         }
@@ -50,11 +50,16 @@ void ConnectionManagerWin::updateContent()
     if (current_)
     {
         ImGui::BeginGroup();
-        ImGui::BeginChild("item view",
-                          ImVec2(0, -ImGui::GetFrameHeightWithSpacing())); // Leave room for 1 line below us
+        ImGui::BeginChild("item view");
         ImGui::Text(current_->title().c_str());
+        ImGui::SameLine();
+        if (ImGui::Button("DEL"))
+        {
+            connections_.erase(current_);
+            current_ = nullptr;
+        }
         ImGui::Separator();
-        if (ImGui::BeginTabBar("##ConManagerTabs", ImGuiTabBarFlags_None))
+        if (current_ && ImGui::BeginTabBar("##ConManagerTabs", ImGuiTabBarFlags_None))
         {
             if (ImGui::BeginTabItem("Settings"))
             {
@@ -69,11 +74,6 @@ void ConnectionManagerWin::updateContent()
             ImGui::EndTabBar();
         }
         ImGui::EndChild();
-        if (ImGui::Button("Revert"))
-        {}
-        ImGui::SameLine();
-        if (ImGui::Button("Save"))
-        {}
         ImGui::EndGroup();
     }
 }

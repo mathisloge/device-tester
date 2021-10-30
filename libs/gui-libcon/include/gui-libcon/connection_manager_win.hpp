@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include <vector>
+#include <unordered_set>
 #include <libcon/manager.hpp>
 #include <gui-common/window.hpp>
 #include <gui-common/window_manager.hpp>
@@ -20,7 +20,7 @@ class ConnectionManagerWin final : public Window
   private:
     WindowManager &win_manager_;
     std::shared_ptr<con::Manager> manager_;
-    std::vector<std::shared_ptr<ConnectionWin>> connections_;
+    std::unordered_set<std::shared_ptr<ConnectionWin>> connections_;
     std::shared_ptr<ConnectionWin> current_;
 };
 } // namespace dev::gui

@@ -18,7 +18,12 @@ class TcpClient::Impl final : public BasicClient
         , socket_{strand_}
         , resolver_{strand_}
         , read_cb_{read_cb}
+        , should_run_{true}
     {}
+    ~Impl()
+    {
+        disconnect();
+    }
 
     void setOptions(const Options &opts)
     {
@@ -53,7 +58,19 @@ class TcpClient::Impl final : public BasicClient
 
     void disconnect()
     {
-        socket_.close();
+        should_run_ = false;
+        // silent disconnect
+        {
+            asio::error_code e;
+            socket_.cancel(e);
+        }
+        {
+            asio::error_code e;
+            socket_.close(e);
+        }
+        // WORKAROUND: wait a short amount of time, to actually close the socket.
+        // https://github.com/mathisloge/device-tester/issues/1
+        std::this_thread::sleep_for(std::chrono::milliseconds(250));
     }
 
   private:
@@ -78,14 +95,11 @@ class TcpClient::Impl final : public BasicClient
     }
     void handleRead(const std::error_code &error, std::size_t length)
     {
-        spdlog::debug("data: {} -> {}", error.message(), length);
         if (!error)
         {
-            // handle_.processData(std::span<uint8_t>(buffer_rx_.begin(), buffer_rx_.end()));
-            // buffer_rx_.clear();
-            // if (should_run_)
             read_cb_({buffer_rx_.begin(), buffer_rx_.begin() + length});
-            startRead();
+            if (should_run_)
+                startRead();
         }
         else
         {
@@ -104,6 +118,7 @@ class TcpClient::Impl final : public BasicClient
     std::array<uint8_t, 65535> buffer_rx_;
     tcp::socket socket_;
     tcp::resolver::results_type endpoints_;
+    bool should_run_;
 };
 
 TcpClient::TcpClient(Manager &manager, const onData &read_cb)
