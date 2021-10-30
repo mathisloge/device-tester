@@ -5,6 +5,7 @@ add_library(gui-libcon STATIC
     src/tcp_server_win.cpp
     src/connection_manager_win.cpp
     src/connection_win.cpp
+    src/raw_data_win.cpp
 )
 target_include_directories(gui-libcon PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

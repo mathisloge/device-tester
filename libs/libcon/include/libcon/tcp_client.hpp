@@ -12,7 +12,7 @@ class LIBCON_EXPORT TcpClient : public Connection
     struct Options
     {
         std::string server;
-        unsigned short server_port;
+        std::string service;
     };
 
   public:

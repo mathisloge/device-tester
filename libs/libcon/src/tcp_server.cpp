@@ -14,6 +14,8 @@ class TcpServerClient : public ITcpServerClient, public std::enable_shared_from_
     void start();
     void stop();
     void shutdown();
+    void send(std::span<uint8_t> data) override;
+    const std::string &connectionReadableName() const override;
 
   private:
     void startRead();
@@ -22,8 +24,10 @@ class TcpServerClient : public ITcpServerClient, public std::enable_shared_from_
     tcp::socket socket_;
     TcpServerManager &manager_;
     std::array<uint8_t, 65535> rx_buffer_;
+    std::string connection_name_;
 };
 using TcpServerClientPtr = std::shared_ptr<TcpServerClient>;
+using TcpServerClients = std::unordered_set<TcpServerClientPtr>;
 
 class TcpServerManager final
 {
@@ -50,47 +54,14 @@ class TcpServerManager final
             c->stop();
         connections_.clear();
     }
+    const TcpServerClients &clients() const
+    {
+        return connections_;
+    }
 
   private:
-    std::unordered_set<TcpServerClientPtr> connections_;
+    TcpServerClients connections_;
 };
-
-TcpServerClient::TcpServerClient(tcp::socket socket, TcpServerManager &manager)
-    : socket_{std::move(socket)}
-    , manager_{manager}
-{}
-void TcpServerClient::start()
-{
-    startRead();
-}
-void TcpServerClient::stop()
-{
-    socket_.close();
-}
-void TcpServerClient::shutdown()
-{
-    asio::error_code ignored_ec;
-    socket_.shutdown(tcp::socket::shutdown_both, ignored_ec);
-}
-
-void TcpServerClient::startRead()
-{
-    auto self{shared_from_this()};
-    socket_.async_read_some(asio::buffer(rx_buffer_), [this, self](asio::error_code ec, std::size_t bytes_transferred) {
-        if (!ec)
-        {
-            /*handler_.processData(
-                shared_from_this(),
-                std::span<uint8_t>(rx_buffer_.begin(), rx_buffer_.begin() +
-               bytes_transferred));*/
-            startRead();
-        }
-        else if (ec != asio::error::operation_aborted)
-        {
-            manager_.stop(shared_from_this());
-        }
-    });
-}
 
 class TcpServer::Impl final
 {
@@ -173,9 +144,9 @@ class TcpServer::Impl final
     Options opts_;
     std::string readable_name_;
     std::string connection_name_;
+    TcpServerManager manager_;
 
   private:
-    TcpServerManager manager_;
     asio::strand<asio::any_io_executor> strand_;
     tcp::acceptor acceptor_;
 };
@@ -225,5 +196,64 @@ const std::string &TcpServer::readableName() const
 void TcpServer::setReadableName(std::string_view name)
 {
     impl_->readable_name_ = name;
+}
+
+void TcpServer::sendToAll(std::span<uint8_t> data)
+{
+    for (const auto &c : impl_->manager_.clients())
+    {
+        c->send(data);
+    }
+}
+
+int TcpServer::numberOfConnectedClients() const
+{
+    return impl_->manager_.clients().size();
+}
+
+////! CLIENT
+TcpServerClient::TcpServerClient(tcp::socket socket, TcpServerManager &manager)
+    : socket_{std::move(socket)}
+    , manager_{manager}
+{}
+void TcpServerClient::start()
+{
+    startRead();
+}
+void TcpServerClient::stop()
+{
+    socket_.close();
+}
+void TcpServerClient::shutdown()
+{
+    asio::error_code ignored_ec;
+    socket_.shutdown(tcp::socket::shutdown_both, ignored_ec);
+}
+
+void TcpServerClient::startRead()
+{
+    auto self{shared_from_this()};
+    socket_.async_read_some(asio::buffer(rx_buffer_), [this, self](asio::error_code ec, std::size_t bytes_transferred) {
+        if (!ec)
+        {
+            /*handler_.processData(
+                shared_from_this(),
+                std::span<uint8_t>(rx_buffer_.begin(), rx_buffer_.begin() +
+               bytes_transferred));*/
+            startRead();
+        }
+        else if (ec != asio::error::operation_aborted)
+        {
+            manager_.stop(shared_from_this());
+        }
+    });
+}
+
+void TcpServerClient::send(std::span<uint8_t> data)
+{}
+
+const std::string &TcpServerClient::connectionReadableName() const
+{
+    return connection_name_;
 }
 } // namespace dev::con

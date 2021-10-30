@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <libcon/manager.hpp>
-#include "windows/raw_data_win.hpp"
+#include <gui-common/window_manager.hpp>
 #include <gui-libcon/connection_manager_win.hpp>
 class Application
 {
@@ -22,9 +22,9 @@ class Application
 
   private:
     bool run_render_loop_;
-    std::shared_ptr<dev::con::Manager> manager_;
-    dev::gui::ConnectionManagerWin manager_win_;
-    dev::gui::RawDataWin data_win_;
+    dev::gui::WindowManager win_manager_;
+    std::shared_ptr<dev::con::Manager> connection_manager_;
+    dev::gui::ConnectionManagerWin connection_manager_win_;
 
   protected:
     static std::string getTitle();

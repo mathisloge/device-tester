@@ -6,7 +6,7 @@
 
 namespace dev::con
 {
-class LIBCON_EXPORT ITcpServerClient
+class LIBCON_EXPORT ITcpServerClient : public Connection
 {};
 
 class LIBCON_EXPORT TcpServer
@@ -31,6 +31,9 @@ class LIBCON_EXPORT TcpServer
     const std::string &connectionReadableName() const;
     const std::string &readableName() const;
     void setReadableName(std::string_view name);
+
+    void sendToAll(std::span<uint8_t> data);
+    int numberOfConnectedClients() const;
 
   private:
     class Impl;

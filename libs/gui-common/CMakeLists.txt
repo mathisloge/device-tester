@@ -3,6 +3,7 @@ project(gui-common)
 add_library(gui-common STATIC
     src/fonts.cpp
     src/window.cpp
+    src/window_manager.cpp
 )
 target_include_directories(gui-common PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

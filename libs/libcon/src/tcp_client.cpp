@@ -33,11 +33,9 @@ class TcpClient::Impl final : public BasicClient
         asio::io_context resolver_ctx;
         tcp::resolver resolver{resolver_ctx};
         asio::error_code err_code;
-        spdlog::debug("Connecting to: {}:{}", opts_.server, opts_.server_port);
+        spdlog::debug("Connecting to: {} service: {}", opts_.server, opts_.service);
         resolver_.async_resolve(
-            opts_.server,
-            fmt::format("{}", opts_.server_port),
-            [this](const asio::error_code &ec, tcp::resolver::results_type endpoints) {
+            opts_.server, opts_.service, [this](const asio::error_code &ec, tcp::resolver::results_type endpoints) {
                 if (!ec)
                 {
                     asio::async_connect(
@@ -80,6 +78,7 @@ class TcpClient::Impl final : public BasicClient
     }
     void handleRead(const std::error_code &error, std::size_t length)
     {
+        spdlog::debug("data: {} -> {}", error.message(), length);
         if (!error)
         {
             // handle_.processData(std::span<uint8_t>(buffer_rx_.begin(), buffer_rx_.end()));

@@ -1,4 +1,4 @@
-#include "gui-libcon/tcp_client_win.hpp"
+#include "tcp_client_win.hpp"
 #include <fmt/format.h>
 #include <imgui.h>
 #include <imgui_stdlib.h>
@@ -21,8 +21,10 @@ const std::string &TcpClientWin::title() const
 }
 void TcpClientWin::drawTabSettings()
 {
+    if (ImGui::InputText("Name", &con_name_))
+        client_->setReadableName(con_name_);
     ImGui::InputText("Server-IP", &opts_.server);
-    ImGui::InputScalar("Server-Port", ImGuiDataType_U16, &opts_.server_port);
+    ImGui::InputText("Port or service", &opts_.service);
 
     if (ImGui::Button("Apply"))
     {
@@ -49,6 +51,9 @@ void TcpClientWin::drawTabSettings()
         opts_ = client_->options();
     }
 }
+
+void TcpClientWin::drawTabDetails()
+{}
 
 void TcpClientWin::onData(std::span<uint8_t> data)
 {}

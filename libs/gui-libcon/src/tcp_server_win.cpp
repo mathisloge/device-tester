@@ -1,4 +1,4 @@
-#include "gui-libcon/tcp_server_win.hpp"
+#include "tcp_server_win.hpp"
 #include <array>
 #include <fmt/format.h>
 #include <imgui.h>
@@ -22,7 +22,9 @@ const std::string &TcpServerWin::title() const
 }
 void TcpServerWin::drawTabSettings()
 {
-    // ImGui::InputText("Server-Protocol", &opts_.protocol);
+    if (ImGui::InputText("Name", &con_name_))
+        server_->setReadableName(con_name_);
+
     constexpr std::array<const char *, 3> items{"none", "IPv4", "IPv6"};
     if (static_cast<size_t>(opts_.protocol) >= items.size())
         opts_.protocol = con::IpProtocol::none;
@@ -62,6 +64,11 @@ void TcpServerWin::drawTabSettings()
     {
         opts_ = server_->options();
     }
+}
+
+void TcpServerWin::drawTabDetails()
+{
+    ImGui::Text("Number of connected clients: %i", server_->numberOfConnectedClients());
 }
 
 } // namespace dev::gui

@@ -1,12 +1,13 @@
 #include "gui-libcon/connection_manager_win.hpp"
 #include <fmt/format.h>
 #include <imgui.h>
-#include "gui-libcon/tcp_client_win.hpp"
-#include "gui-libcon/tcp_server_win.hpp"
+#include "tcp_client_win.hpp"
+#include "tcp_server_win.hpp"
 namespace dev::gui
 {
-ConnectionManagerWin::ConnectionManagerWin(const std::shared_ptr<con::Manager> &manager)
+ConnectionManagerWin::ConnectionManagerWin(WindowManager &win_manager, const std::shared_ptr<con::Manager> &manager)
     : Window{fmt::format("Connection Manager"), ImGuiWindowFlags_MenuBar}
+    , win_manager_{win_manager}
     , manager_{manager}
     , current_{nullptr}
 {}
@@ -62,7 +63,7 @@ void ConnectionManagerWin::updateContent()
             }
             if (ImGui::BeginTabItem("Details"))
             {
-                ImGui::Text("ID: 0123456789");
+                current_->drawTabDetails();
                 ImGui::EndTabItem();
             }
             ImGui::EndTabBar();
