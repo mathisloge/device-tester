@@ -13,7 +13,10 @@ add_library(libcon STATIC
     src/udp_connection.cpp
     src/serial.cpp
 )
-target_link_libraries(libcon PRIVATE asio::asio)
+target_link_libraries(libcon PRIVATE 
+    asio::asio
+    Boost::headers
+)
 generate_export_header(libcon EXPORT_FILE_NAME libcon_export.hpp)
 target_include_directories(libcon PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

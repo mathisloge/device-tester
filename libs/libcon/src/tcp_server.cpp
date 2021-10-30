@@ -18,11 +18,14 @@ class TcpServerClient : public ITcpServerClient, public std::enable_shared_from_
     void send(std::span<uint8_t> data) override;
     const std::string &connectionReadableName() const override;
 
+    boost::signals2::connection connectOnReceive(const ReiceiveSignal::slot_type &sub) override;
+
   private:
     void startRead();
     void startWrite();
 
   private:
+    ReiceiveSignal rx_sig_;
     std::atomic_bool write_in_progress_;
     bool do_run_;
     tcp::socket socket_;
@@ -237,7 +240,7 @@ void TcpServerClient::start()
 {
     do_run_ = true;
     startRead();
-    const auto& remote_endp = socket_.remote_endpoint();
+    const auto &remote_endp = socket_.remote_endpoint();
     connection_name_ = fmt::format("{}:{}", remote_endp.address().to_string(), remote_endp.port());
     std::string t{"hallo"};
     std::span<uint8_t> x((uint8_t *)t.data(), t.size());
@@ -260,10 +263,7 @@ void TcpServerClient::startRead()
     socket_.async_receive(asio::buffer(rx_buffer_), [self](asio::error_code ec, std::size_t bytes_transferred) {
         if (!ec)
         {
-            /*handler_.processData(
-                shared_from_this(),
-                std::span<uint8_t>(rx_buffer_.begin(), rx_buffer_.begin() +
-               bytes_transferred));*/
+            self->rx_sig_({self->rx_buffer_.begin(), self->rx_buffer_.begin() + bytes_transferred});
             if (self->do_run_)
                 self->startRead();
         }
@@ -307,5 +307,9 @@ void TcpServerClient::startWrite()
 const std::string &TcpServerClient::connectionReadableName() const
 {
     return connection_name_;
+}
+boost::signals2::connection TcpServerClient::connectOnReceive(const ReiceiveSignal::slot_type &sub)
+{
+    return rx_sig_.connect(sub);
 }
 } // namespace dev::con

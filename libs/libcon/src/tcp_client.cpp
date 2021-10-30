@@ -12,12 +12,11 @@ class TcpClient::Impl final : public BasicClient
     using tcp = asio::ip::tcp;
 
   public:
-    Impl(Manager &manager, const onData &read_cb)
+    Impl(Manager &manager)
         : BasicClient{manager.impl().ctx()}
         , opts_{}
         , socket_{strand_}
         , resolver_{strand_}
-        , read_cb_{read_cb}
         , should_run_{true}
     {}
     ~Impl()
@@ -97,7 +96,7 @@ class TcpClient::Impl final : public BasicClient
     {
         if (!error)
         {
-            read_cb_({buffer_rx_.begin(), buffer_rx_.begin() + length});
+            rx_sig_({buffer_rx_.begin(), buffer_rx_.begin() + length});
             if (should_run_)
                 startRead();
         }
@@ -111,18 +110,18 @@ class TcpClient::Impl final : public BasicClient
   public:
     Options opts_;
     std::string connection_str_;
+    ReiceiveSignal rx_sig_;
 
   private:
     tcp::resolver resolver_;
-    onData read_cb_;
     std::array<uint8_t, 65535> buffer_rx_;
     tcp::socket socket_;
     tcp::resolver::results_type endpoints_;
     bool should_run_;
 };
 
-TcpClient::TcpClient(Manager &manager, const onData &read_cb)
-    : impl_{std::make_unique<Impl>(manager, read_cb)}
+TcpClient::TcpClient(Manager &manager)
+    : impl_{std::make_unique<Impl>(manager)}
 {}
 
 TcpClient::~TcpClient()
@@ -161,5 +160,9 @@ void TcpClient::connect()
 void TcpClient::disconnect()
 {
     impl_->disconnect();
+}
+boost::signals2::connection TcpClient::connectOnReceive(const ReiceiveSignal::slot_type &sub)
+{
+    return impl_->rx_sig_.connect(sub);
 }
 } // namespace dev::con

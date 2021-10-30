@@ -16,7 +16,7 @@ class LIBCON_EXPORT TcpClient : public Connection
     };
 
   public:
-    TcpClient(Manager &manager, const onData &read_cb);
+    TcpClient(Manager &manager);
     virtual ~TcpClient();
 
     void setOptions(const Options &opts);
@@ -24,6 +24,8 @@ class LIBCON_EXPORT TcpClient : public Connection
     bool isConnected() const;
     void connect();
     void disconnect();
+
+    boost::signals2::connection connectOnReceive(const ReiceiveSignal::slot_type &sub) override;
 
     void send(std::span<uint8_t> data) override;
     const std::string &connectionReadableName() const override;

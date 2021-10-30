@@ -5,8 +5,9 @@
 namespace dev::gui
 {
 TcpClientWin::TcpClientWin(con::Manager &manager)
-    : client_{std::make_shared<con::TcpClient>(manager, std::bind(&TcpClientWin::onData, this, std::placeholders::_1))}
+    : client_{std::make_shared<con::TcpClient>(manager)}
 {
+    client_->connectOnReceive(std::bind(&TcpClientWin::onData, this, std::placeholders::_1));
     opts_ = client_->options();
 }
 TcpClientWin::~TcpClientWin()
