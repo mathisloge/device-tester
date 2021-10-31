@@ -5,11 +5,14 @@ namespace dev::con
 
 ManagerImpl::ManagerImpl()
     : run_{true}
+    , guard_{io_.get_executor()}
     , runner_{std::bind(&ManagerImpl::work, this)}
+
 {}
 ManagerImpl::~ManagerImpl()
 {
     run_ = false;
+    guard_.reset();
     if (runner_.joinable())
         runner_.join();
 }

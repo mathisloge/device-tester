@@ -62,10 +62,6 @@ class TcpClient::Impl final : public BasicClient
         // silent disconnect
         {
             asio::error_code e;
-            socket_.cancel(e);
-        }
-        {
-            asio::error_code e;
             socket_.close(e);
         }
         // WORKAROUND: wait a short amount of time, to actually close the socket.
