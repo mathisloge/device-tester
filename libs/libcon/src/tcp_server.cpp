@@ -3,11 +3,16 @@
 #include <set>
 #include <spdlog/spdlog.h>
 #include "manager_impl.hpp"
+#include "receiver.hpp"
 #include "writer.hpp"
 namespace dev::con
 {
 class TcpServerManager;
-class TcpServerClient : public ITcpServerClient, public Writer, public std::enable_shared_from_this<TcpServerClient>
+class TcpServerClient :
+    public ITcpServerClient,
+    public Writer,
+    public Receiver,
+    public std::enable_shared_from_this<TcpServerClient>
 {
     using tcp = asio::ip::tcp;
 
@@ -27,7 +32,6 @@ class TcpServerClient : public ITcpServerClient, public Writer, public std::enab
     void startWrite();
 
   private:
-    ReiceiveSignal rx_sig_;
     std::atomic_bool write_in_progress_;
     bool do_run_;
     tcp::socket socket_;
@@ -51,10 +55,12 @@ class TcpServerManager final
     {
         connections_.insert(client);
         client->start();
+        client_state_sig_(TcpServer::ClientState::connected, *client);
     }
     void stop(TcpServerClientPtr client)
     {
         client->stop();
+        client_state_sig_(TcpServer::ClientState::disconnected, *client);
         connections_.erase(client);
     }
     void stopAll()
@@ -67,9 +73,14 @@ class TcpServerManager final
     {
         return connections_;
     }
+    boost::signals2::connection connectClientState(const TcpServer::ClientStateSignal::slot_type &sub)
+    {
+        return client_state_sig_.connect(sub);
+    }
 
   private:
     TcpServerClients connections_;
+    TcpServer::ClientStateSignal client_state_sig_;
 };
 
 class TcpServer::Impl final
@@ -230,6 +241,11 @@ void TcpServer::eachClient(const std::function<void(ITcpServerClient &client)> &
     }
 }
 
+boost::signals2::connection TcpServer::connectClientState(const ClientStateSignal::slot_type &sub)
+{
+    return impl_->manager_.connectClientState(sub);
+}
+
 ////! CLIENT
 TcpServerClient::TcpServerClient(tcp::socket socket, TcpServerManager &manager)
     : do_run_{true}
@@ -257,18 +273,18 @@ void TcpServerClient::shutdown()
 void TcpServerClient::startRead()
 {
     auto self{shared_from_this()};
-    socket_.async_receive(asio::buffer(rx_buffer_), [self](asio::error_code ec, std::size_t bytes_transferred) {
+    socket_.async_receive(asio::buffer(rx_buffer_), [this, self](asio::error_code ec, std::size_t bytes_transferred) {
         if (!ec)
         {
-            self->rx_sig_({self->rx_buffer_.begin(), self->rx_buffer_.begin() + bytes_transferred});
-            if (self->do_run_)
-                self->startRead();
+            onReceive({rx_buffer_.begin(), rx_buffer_.begin() + bytes_transferred});
+            if (do_run_)
+                startRead();
         }
         else if (ec != asio::error::operation_aborted)
         {
             spdlog::error("TcpServerClient: {}", ec.message());
-            if (self->do_run_)
-                self->manager_.stop(self);
+            if (do_run_)
+                manager_.stop(self);
         }
     });
 }
@@ -309,7 +325,7 @@ const std::string &TcpServerClient::connectionReadableName() const
 }
 boost::signals2::connection TcpServerClient::connectOnReceive(const ReiceiveSignal::slot_type &sub)
 {
-    return rx_sig_.connect(sub);
+    return Receiver::connectOnReceive(sub);
 }
 void TcpServerClient::send(std::span<uint8_t> data)
 {

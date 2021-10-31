@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <string>
+#include <boost/signals2.hpp>
 #include "connection.hpp"
 #include "manager.hpp"
 
@@ -17,6 +18,12 @@ class LIBCON_EXPORT TcpServer
         IpProtocol protocol;
         unsigned short port;
     };
+    enum class ClientState
+    {
+        connected,
+        disconnected
+    };
+    using ClientStateSignal = boost::signals2::signal<void(ClientState, ITcpServerClient &)>;
 
   public:
     TcpServer(Manager &manager);
@@ -35,6 +42,7 @@ class LIBCON_EXPORT TcpServer
     void sendToAll(std::span<uint8_t> data);
     int numberOfConnectedClients() const;
     void eachClient(const std::function<void(ITcpServerClient &client)> &pred);
+    boost::signals2::connection connectClientState(const ClientStateSignal::slot_type& sub);
 
   private:
     class Impl;

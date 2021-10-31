@@ -97,7 +97,7 @@ class TcpClient::Impl final : public BasicClient
     {
         if (!error)
         {
-            rx_sig_({buffer_rx_.begin(), buffer_rx_.begin() + length});
+            onReceive({buffer_rx_.begin(), buffer_rx_.begin() + length});
             if (should_run_)
                 startRead();
         }
@@ -117,7 +117,6 @@ class TcpClient::Impl final : public BasicClient
   public:
     Options opts_;
     std::string connection_str_;
-    ReiceiveSignal rx_sig_;
 
   private:
     tcp::resolver resolver_;
@@ -174,6 +173,6 @@ void TcpClient::disconnect()
 }
 boost::signals2::connection TcpClient::connectOnReceive(const ReiceiveSignal::slot_type &sub)
 {
-    return impl_->rx_sig_.connect(sub);
+    return impl_->connectOnReceive(sub);
 }
 } // namespace dev::con

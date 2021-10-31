@@ -67,7 +67,6 @@ class Serial::Impl final : public BasicClient
     {}
 
   public:
-    ReiceiveSignal rx_sig_;
     Options opts_;
     asio::serial_port serial_;
     std::string connection_str_;
@@ -100,7 +99,7 @@ const std::string &Serial::connectionReadableName() const
 
 boost::signals2::connection Serial::connectOnReceive(const ReiceiveSignal::slot_type &sub)
 {
-    return impl_->rx_sig_.connect(sub);
+    return impl_->connectOnReceive(sub);
 }
 
 } // namespace dev::con

@@ -14,6 +14,7 @@ add_library(libcon STATIC
     src/serial.cpp
     src/ring_buffer.hpp
     src/writer.cpp
+    src/receiver.cpp
 )
 target_link_libraries(libcon PRIVATE 
     asio::asio

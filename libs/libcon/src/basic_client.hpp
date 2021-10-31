@@ -1,7 +1,8 @@
 #pragma once
 #include <asio.hpp>
+#include "receiver.hpp"
 #include "writer.hpp"
-class BasicClient : public Writer
+class BasicClient : public Writer, public Receiver
 {
   public:
     BasicClient(asio::io_context &io_context);
