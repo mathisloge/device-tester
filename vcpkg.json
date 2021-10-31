@@ -8,6 +8,7 @@
         "openssl"
       ]
     },
+    "boost-circular-buffer",
     "boost-signals2",
     "fmt",
     {

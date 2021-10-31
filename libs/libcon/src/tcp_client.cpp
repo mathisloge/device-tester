@@ -18,6 +18,7 @@ class TcpClient::Impl final : public BasicClient
         , socket_{strand_}
         , resolver_{strand_}
         , should_run_{true}
+        , is_writing_{false}
     {}
     ~Impl()
     {
@@ -107,6 +108,12 @@ class TcpClient::Impl final : public BasicClient
         }
     }
 
+    void doWrite() override
+    {
+        if (is_writing_ || !should_run_)
+            return;
+    }
+
   public:
     Options opts_;
     std::string connection_str_;
@@ -118,6 +125,8 @@ class TcpClient::Impl final : public BasicClient
     tcp::socket socket_;
     tcp::resolver::results_type endpoints_;
     bool should_run_;
+
+    std::atomic_bool is_writing_;
 };
 
 TcpClient::TcpClient(Manager &manager)
@@ -143,7 +152,9 @@ const TcpClient::Options &TcpClient::options() const
 }
 
 void TcpClient::send(std::span<uint8_t> data)
-{}
+{
+    impl_->write(data);
+}
 
 const std::string &TcpClient::connectionReadableName() const
 {

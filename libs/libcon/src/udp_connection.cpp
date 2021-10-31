@@ -13,6 +13,10 @@ class UdpConnection::Impl final : public BasicClient
         , socket_{strand_}
     {}
 
+  private:
+    void doWrite() override
+    {}
+
   public:
     std::string connection_str_;
 
@@ -32,10 +36,12 @@ UdpConnection::~UdpConnection()
 {}
 
 void UdpConnection::send(std::span<uint8_t> data)
-{}
+{
+    impl_->write(data);
+}
 
 const std::string &UdpConnection::connectionReadableName() const
 {
-  return impl_->connection_str_;
+    return impl_->connection_str_;
 }
 } // namespace dev::con

@@ -3,10 +3,11 @@
 #include <set>
 #include <spdlog/spdlog.h>
 #include "manager_impl.hpp"
+#include "writer.hpp"
 namespace dev::con
 {
 class TcpServerManager;
-class TcpServerClient : public ITcpServerClient, public std::enable_shared_from_this<TcpServerClient>
+class TcpServerClient : public ITcpServerClient, public Writer, public std::enable_shared_from_this<TcpServerClient>
 {
     using tcp = asio::ip::tcp;
 
@@ -21,6 +22,7 @@ class TcpServerClient : public ITcpServerClient, public std::enable_shared_from_
     boost::signals2::connection connectOnReceive(const ReiceiveSignal::slot_type &sub) override;
 
   private:
+    void doWrite() override;
     void startRead();
     void startWrite();
 
@@ -32,8 +34,6 @@ class TcpServerClient : public ITcpServerClient, public std::enable_shared_from_
     TcpServerManager &manager_;
     std::array<uint8_t, 65535> rx_buffer_;
     std::string connection_name_;
-    std::mutex tx_buffer_mtx_;
-    std::queue<std::vector<uint8_t>> tx_buffer_;
 };
 using TcpServerClientPtr = std::shared_ptr<TcpServerClient>;
 using TcpServerClients = std::set<TcpServerClientPtr>;
@@ -242,9 +242,6 @@ void TcpServerClient::start()
     startRead();
     const auto &remote_endp = socket_.remote_endpoint();
     connection_name_ = fmt::format("{}:{}", remote_endp.address().to_string(), remote_endp.port());
-    std::string t{"hallo"};
-    std::span<uint8_t> x((uint8_t *)t.data(), t.size());
-    send(x);
 }
 void TcpServerClient::stop()
 {
@@ -276,30 +273,32 @@ void TcpServerClient::startRead()
     });
 }
 
-void TcpServerClient::send(std::span<uint8_t> data)
+void TcpServerClient::doWrite()
 {
-    {
-        std::unique_lock<std::mutex> l{tx_buffer_mtx_};
-        tx_buffer_.emplace(std::vector<uint8_t>{data.begin(), data.end()});
-    }
+    if (write_in_progress_)
+        return;
     startWrite();
 }
 
 void TcpServerClient::startWrite()
 {
-    if (write_in_progress_ || tx_buffer_.size() == 0)
+    if (write_in_progress_)
         return;
     write_in_progress_ = true;
     auto self(shared_from_this());
-    socket_.async_send(asio::buffer(tx_buffer_.front()), [self](asio::error_code ec, std::size_t written) {
+    socket_.async_send(asio::buffer(tx_current_), [this, self](asio::error_code ec, std::size_t written) {
         if (!ec)
         {
+            if (tx_current_.size() > written)
             {
-                std::unique_lock<std::mutex> l{self->tx_buffer_mtx_};
-                self->tx_buffer_.pop();
-                self->write_in_progress_ = false;
+                tx_current_.erase(tx_current_.begin(), tx_current_.begin() + written);
             }
-            self->startWrite();
+            else if (tx_queue_.is_not_empty())
+            {
+                tx_current_ = std::forward<std::vector<uint8_t>>(tx_queue_.pop_back());
+            }
+            write_in_progress_ = false;
+            startWrite();
         }
     });
 }
@@ -311,5 +310,9 @@ const std::string &TcpServerClient::connectionReadableName() const
 boost::signals2::connection TcpServerClient::connectOnReceive(const ReiceiveSignal::slot_type &sub)
 {
     return rx_sig_.connect(sub);
+}
+void TcpServerClient::send(std::span<uint8_t> data)
+{
+    write(data);
 }
 } // namespace dev::con

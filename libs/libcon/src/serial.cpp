@@ -62,6 +62,10 @@ class Serial::Impl final : public BasicClient
         connection_str_ = fmt::format("serial://{}@{}", opts_.port, opts_.baud_rate);
     }
 
+  private:
+    void doWrite() override
+    {}
+
   public:
     ReiceiveSignal rx_sig_;
     Options opts_;
@@ -77,7 +81,9 @@ Serial::~Serial()
 {}
 
 void Serial::send(std::span<uint8_t> data)
-{}
+{
+    impl_->write(data);
+}
 
 const Serial::Options &Serial::options() const
 {

@@ -12,6 +12,8 @@ add_library(libcon STATIC
     src/tcp_server.cpp
     src/udp_connection.cpp
     src/serial.cpp
+    src/ring_buffer.hpp
+    src/writer.cpp
 )
 target_link_libraries(libcon PRIVATE 
     asio::asio
