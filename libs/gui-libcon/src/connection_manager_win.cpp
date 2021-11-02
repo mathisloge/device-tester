@@ -23,11 +23,11 @@ void ConnectionManagerWin::updateContent()
         {
             if (ImGui::MenuItem("TCP"))
             {
-                current_ = *connections_.emplace(std::make_shared<TcpClientWin>(*manager_)).first;
+                current_ = *connections_.emplace(std::make_shared<TcpClientWin>(*manager_, win_manager_)).first;
             }
             if (ImGui::MenuItem("TCP-Server"))
             {
-                current_ = *connections_.emplace(std::make_shared<TcpServerWin>(*manager_)).first;
+                current_ = *connections_.emplace(std::make_shared<TcpServerWin>(*manager_, win_manager_)).first;
             }
             ImGui::EndMenu();
         }

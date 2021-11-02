@@ -1,4 +1,6 @@
 #include "libcon/tcp_client.hpp"
+#include <atomic>
+#include <mutex>
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
 #include "basic_client.hpp"
@@ -108,6 +110,32 @@ class TcpClient::Impl final : public BasicClient
     {
         if (is_writing_ || !should_run_)
             return;
+        startWrite();
+    }
+
+    void startWrite()
+    {
+        if (write_in_progress_)
+            return;
+        std::unique_lock<std::mutex> l{write_lock_};
+        if (tx_current_.size() == 0 && tx_queue_.is_not_empty())
+            tx_current_ = tx_queue_.pop_back();
+        else
+            return;
+        write_in_progress_ = true;
+        socket_.async_send(asio::buffer(tx_current_), [this](asio::error_code ec, std::size_t written) {
+            if (!ec)
+            {
+                if (tx_current_.size() > written)
+                    tx_current_.erase(tx_current_.begin(), tx_current_.begin() + written);
+                else if (tx_queue_.is_not_empty())
+                    tx_current_ = std::forward<std::vector<uint8_t>>(tx_queue_.pop_back());
+                else
+                    tx_current_.clear();
+                write_in_progress_ = false;
+                startWrite();
+            }
+        });
     }
 
   public:
@@ -115,6 +143,8 @@ class TcpClient::Impl final : public BasicClient
     std::string connection_str_;
 
   private:
+    std::mutex write_lock_;
+    std::atomic_bool write_in_progress_;
     tcp::resolver resolver_;
     std::array<uint8_t, 65535> buffer_rx_;
     tcp::socket socket_;

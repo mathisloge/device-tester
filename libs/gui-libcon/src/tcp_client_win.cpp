@@ -4,10 +4,11 @@
 #include <imgui_stdlib.h>
 namespace dev::gui
 {
-TcpClientWin::TcpClientWin(con::Manager &manager)
-    : client_{std::make_shared<con::TcpClient>(manager)}
+TcpClientWin::TcpClientWin(con::Manager &manager, WindowManager &win_manager)
+    : win_manager_{win_manager}
+    , client_{std::make_shared<con::TcpClient>(manager)}
+    , raw_win_{nullptr}
 {
-    client_->connectOnReceive(std::bind(&TcpClientWin::onData, this, std::placeholders::_1));
     opts_ = client_->options();
 }
 TcpClientWin::~TcpClientWin()
@@ -54,9 +55,25 @@ void TcpClientWin::drawTabSettings()
 }
 
 void TcpClientWin::drawTabDetails()
-{}
-
-void TcpClientWin::onData(std::span<uint8_t> data)
-{}
+{
+    bool has_raw_win = raw_win_ != nullptr;
+    if (ImGui::Checkbox("RawDataWin", &has_raw_win))
+    {
+        if (has_raw_win)
+        {
+            raw_win_ = std::make_shared<RawDataWin>(title(), reinterpret_cast<intptr_t>(this));
+            client_->connectOnReceive(con::Connection::ReiceiveSignal::slot_type{[this](std::span<uint8_t> d) {
+                                          raw_win_->addData(d);
+                                      }}.track_foreign(raw_win_));
+            raw_win_->connectSend(std::bind(&con::TcpClient::send, &(*client_), std::placeholders::_1));
+            win_manager_.registerWindow(raw_win_);
+        }
+        else if (raw_win_)
+        {
+            win_manager_.unregisterWindow(raw_win_);
+            raw_win_ = nullptr;
+        }
+    }
+}
 
 } // namespace dev::gui

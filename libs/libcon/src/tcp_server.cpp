@@ -1,4 +1,5 @@
 #include "libcon/tcp_server.hpp"
+#include <mutex>
 #include <queue>
 #include <set>
 #include <spdlog/spdlog.h>
@@ -32,6 +33,7 @@ class TcpServerClient :
     void startWrite();
 
   private:
+    std::mutex write_lock_;
     std::atomic_bool write_in_progress_;
     bool do_run_;
     tcp::socket socket_;
@@ -300,19 +302,22 @@ void TcpServerClient::startWrite()
 {
     if (write_in_progress_)
         return;
+    std::unique_lock<std::mutex> l{write_lock_};
+    if (tx_current_.size() == 0 && tx_queue_.is_not_empty())
+        tx_current_ = tx_queue_.pop_back();
+    else
+        return;
     write_in_progress_ = true;
     auto self(shared_from_this());
     socket_.async_send(asio::buffer(tx_current_), [this, self](asio::error_code ec, std::size_t written) {
         if (!ec)
         {
             if (tx_current_.size() > written)
-            {
                 tx_current_.erase(tx_current_.begin(), tx_current_.begin() + written);
-            }
             else if (tx_queue_.is_not_empty())
-            {
                 tx_current_ = std::forward<std::vector<uint8_t>>(tx_queue_.pop_back());
-            }
+            else
+                tx_current_.clear();
             write_in_progress_ = false;
             startWrite();
         }

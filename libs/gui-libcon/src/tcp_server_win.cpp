@@ -5,10 +5,23 @@
 #include <imgui_stdlib.h>
 namespace dev::gui
 {
-TcpServerWin::TcpServerWin(con::Manager &manager)
-    : server_{std::make_shared<con::TcpServer>(manager)}
+TcpServerWin::TcpServerWin(con::Manager &manager, WindowManager &win_manager)
+    : win_manager_{win_manager}
+    , server_{std::make_shared<con::TcpServer>(manager)}
 {
     opts_ = server_->options();
+
+    server_->connectClientState([this](con::TcpServer::ClientState state, con::ITcpServerClient &client) {
+        if (state == con::TcpServer::ClientState::disconnected)
+        {
+            auto it = client_wins_.find(&client);
+            if (it != client_wins_.end())
+            {
+                win_manager_.unregisterWindow(it->second);
+                client_wins_.erase(it);
+            }
+        }
+    });
 }
 TcpServerWin::~TcpServerWin()
 {}
@@ -75,13 +88,39 @@ void TcpServerWin::drawCustomTabs()
 {
     if (ImGui::BeginTabItem("Clients"))
     {
-        server_->eachClient([](const con::ITcpServerClient &c) {
+        server_->eachClient([this](con::ITcpServerClient &c) {
             const auto &title = c.readableName().empty() ? c.connectionReadableName() : c.readableName();
             ImGui::PushID(&c);
             if (!ImGui::CollapsingHeader(title.c_str()))
             {
                 ImGui::PopID();
                 return;
+            }
+
+            const auto raw_data_it = client_wins_.find(&c);
+
+            bool has_raw_data = raw_data_it != client_wins_.end();
+            if (ImGui::Checkbox("RawDataWin", &has_raw_data))
+            {
+                if (has_raw_data)
+                {
+                    const auto emplaced =
+                        client_wins_.emplace(&c, std::make_shared<RawDataWin>(title, reinterpret_cast<intptr_t>(&c)));
+                    if (emplaced.second)
+                    {
+                        auto raw_win = emplaced.first->second;
+                        win_manager_.registerWindow(raw_win);
+                        c.connectOnReceive(con::Connection::ReiceiveSignal::slot_type{[raw_win](std::span<uint8_t> d) {
+                                               raw_win->addData(d);
+                                           }}.track_foreign(emplaced.first->second));
+                        raw_win->connectSend(std::bind(&con::ITcpServerClient::send, &c, std::placeholders::_1));
+                    }
+                }
+                else if (raw_data_it != client_wins_.end())
+                {
+                    win_manager_.unregisterWindow(raw_data_it->second);
+                    client_wins_.erase(raw_data_it);
+                }
             }
 
             ImGui::BulletText(title.c_str());

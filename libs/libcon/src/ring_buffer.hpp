@@ -30,16 +30,16 @@ class RingBuffer
         m_not_empty.notify_one();
     }
 
-    T &&pop_back()
+    T pop_back()
     {
         T item;
         {
             std::unique_lock<std::mutex> lock{m_mutex};
             m_not_empty.wait(lock, std::bind(&RingBuffer<value_type>::is_not_empty, this));
-            item = std::move(m_container[--m_unread]);
+            item = m_container[--m_unread];
         }
         m_not_full.notify_one();
-        return std::move(item);
+        return item;
     }
 
     bool is_not_empty() const
