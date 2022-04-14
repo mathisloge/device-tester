@@ -37,7 +37,7 @@ void ConnectionManagerWin::updateContent()
             }
             if (ImGui::MenuItem("COAP Client"))
             {
-                current_ = *connections_.emplace(std::make_shared<CoapClientWin>(win_manager_)).first;
+                current_ = *connections_.emplace(std::make_shared<CoapClientWin>(*manager_, win_manager_)).first;
             }
             ImGui::EndMenu();
         }

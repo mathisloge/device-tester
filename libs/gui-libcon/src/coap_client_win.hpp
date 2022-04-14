@@ -11,7 +11,7 @@ namespace dev::gui
 class CoapClientWin final : public ConnectionWin
 {
   public:
-    explicit CoapClientWin(WindowManager &win_manager);
+    explicit CoapClientWin(con::Manager &manager, WindowManager &win_manager);
     ~CoapClientWin();
 
     const std::string &title() const override;

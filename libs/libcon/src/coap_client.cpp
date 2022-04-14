@@ -1,8 +1,10 @@
+#include <cstdlib>
 #include <asio.hpp>
 #include <coap3/coap.h>
 #include <libcon/coap_client.hpp>
 #include <spdlog/spdlog.h>
 #include "coap_state.hpp"
+#include "manager_impl.hpp"
 namespace dev::con
 {
 // clang-format off
@@ -13,13 +15,14 @@ struct CoapSessionDeleter { void operator()(coap_session_t *ctx) { spdlog::info(
 class CoapClient::Impl final
 {
   public:
-    Impl()
-        : session_{nullptr, CoapSessionDeleter{}}
+    Impl(Manager &manager)
+        : strand_{asio::make_strand(manager.impl().ctx())}
+        , session_{nullptr, CoapSessionDeleter{}}
     {
         ensure_coap();
         ctx_ = std::unique_ptr<coap_context_t, CoapCtxDeleter>(coap_new_context(nullptr), CoapCtxDeleter{});
         coap_register_option(ctx_.get(), COAP_OPTION_BLOCK2);
-        
+
         opts_.server_uri = "fe80::7ae3:6dff:fe09:8188";
         opts_.server_port = COAP_DEFAULT_PORT;
 
@@ -63,6 +66,7 @@ class CoapClient::Impl final
 
         coap_show_pdu(LOG_INFO, pdu);
         coap_send(session_.get(), pdu);
+        asio::post(strand_, [this]() { const auto result = coap_io_process(ctx_.get(), 120); });
     }
 
   private:
@@ -86,6 +90,7 @@ class CoapClient::Impl final
     }
 
   private:
+    asio::strand<asio::any_io_executor> strand_;
     std::unique_ptr<coap_context_t, CoapCtxDeleter> ctx_;
     std::unique_ptr<coap_session_t, CoapSessionDeleter> session_;
 
@@ -107,8 +112,8 @@ int CoapClient::DefaultSecurePort()
     return COAPS_DEFAULT_PORT;
 }
 
-CoapClient::CoapClient()
-    : impl_{std::make_unique<Impl>()}
+CoapClient::CoapClient(Manager &manager)
+    : impl_{std::make_unique<Impl>(manager)}
 {}
 
 CoapClient::~CoapClient()

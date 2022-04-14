@@ -3,9 +3,9 @@
 namespace dev::gui
 {
 
-CoapClientWin::CoapClientWin(WindowManager &win_manager)
+CoapClientWin::CoapClientWin(con::Manager &manager, WindowManager &win_manager)
     : win_manager_{win_manager}
-    , connection_{std::make_shared<con::CoapClient>()}
+    , connection_{std::make_shared<con::CoapClient>(manager)}
     , raw_win_{nullptr}
     , client_title_{"COAP CLIENT"}
 {}
@@ -21,14 +21,13 @@ const std::string &CoapClientWin::title() const
 }
 
 void CoapClientWin::drawTabSettings()
+{}
+void CoapClientWin::drawTabDetails()
 {
-    ImGui::Text("TEST2");
-    if (ImGui::Button("TEST"))
+    if (ImGui::Button("GET well-known"))
     {
         connection_->getWellKnown();
     }
 }
-void CoapClientWin::drawTabDetails()
-{}
 
 } // namespace dev::gui

@@ -2,7 +2,7 @@
 #include <memory>
 #include <string>
 #include "connection.hpp"
-#include "libcon_export.hpp"
+#include "manager.hpp"
 
 namespace dev::con
 {
@@ -30,7 +30,7 @@ class LIBCON_EXPORT CoapClient : public BaseConnection
     };
 
   public:
-    CoapClient();
+    CoapClient(Manager &manager);
     virtual ~CoapClient();
 
     void applyOptions(const Options &opts);
