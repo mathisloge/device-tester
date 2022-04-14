@@ -8,6 +8,14 @@ add_executable(device-tester
     src/application_vulkan.hpp
     src/application_vulkan.cpp
 )
+if(WIN32)
+    if(MSVC)
+        target_sources(device-tester PRIVATE WindowsHiDPI.manifest)
+    elseif(MINGW)
+        target_sources(device-tester PRIVATE WindowsHiDPI.rc)
+    endif()
+    target_link_libraries(device-tester PRIVATE dwmapi)
+endif()
 
 target_link_libraries(device-tester PRIVATE
     fmt::fmt

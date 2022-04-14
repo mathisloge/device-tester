@@ -1,5 +1,6 @@
 #include "application_vulkan.hpp"
 #include <SDL.h>
+#include <SDL_syswm.h>
 #include <SDL_vulkan.h>
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
@@ -9,6 +10,10 @@
 #include <vulkan/vulkan.h>
 #include "icon.hpp"
 #include <gui-common/fonts.hpp>
+#ifdef _WIN32
+#include <dwmapi.h>
+#include <windows.h>
+#endif
 //#define IMGUI_UNLIMITED_FRAME_RATE
 #ifdef _DEBUG
 #define IMGUI_VULKAN_DEBUG_REPORT
@@ -368,6 +373,17 @@ bool ApplicationVulkan::setup()
     window_ =
         SDL_CreateWindow(getTitle().c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
     setWindowIcon(window_);
+#ifdef _WIN32
+    // dark title bar :)
+    SDL_SysWMinfo wmInfo;
+    SDL_VERSION(&wmInfo.version);
+    SDL_GetWindowWMInfo(window_, &wmInfo);
+    HWND hwnd = wmInfo.info.win.window;
+
+    BOOL USE_DARK_MODE = true;
+    BOOL SET_IMMERSIVE_DARK_MODE_SUCCESS = SUCCEEDED(DwmSetWindowAttribute(
+        hwnd, DWMWINDOWATTRIBUTE::DWMWA_USE_IMMERSIVE_DARK_MODE, &USE_DARK_MODE, sizeof(USE_DARK_MODE)));
+#endif
     // Setup Vulkan
     uint32_t extensions_count = 0;
     SDL_Vulkan_GetInstanceExtensions(window_, &extensions_count, NULL);
