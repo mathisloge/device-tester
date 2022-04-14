@@ -20,7 +20,7 @@ class TcpClient::Impl final : public BasicClient
         , socket_{strand_}
         , resolver_{strand_}
         , should_run_{true}
-        , is_writing_{false}
+        , write_in_progress_{false}
     {}
     ~Impl()
     {
@@ -108,7 +108,7 @@ class TcpClient::Impl final : public BasicClient
 
     void doWrite() override
     {
-        if (is_writing_ || !should_run_)
+        if (!should_run_)
             return;
         startWrite();
     }
@@ -150,8 +150,6 @@ class TcpClient::Impl final : public BasicClient
     tcp::socket socket_;
     tcp::resolver::results_type endpoints_;
     bool should_run_;
-
-    std::atomic_bool is_writing_;
 };
 
 TcpClient::TcpClient(Manager &manager)

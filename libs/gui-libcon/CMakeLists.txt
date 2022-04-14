@@ -6,7 +6,8 @@ add_library(gui-libcon STATIC
     src/connection_manager_win.cpp
     src/connection_win.cpp
     src/raw_data_win.cpp
-)
+    src/udp_con_win.cpp
+ "src/udp_con_win.hpp")
 target_include_directories(gui-libcon PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>

@@ -12,13 +12,6 @@
             "binaryDir": "${sourceDir}/build/${presetName}"
         },
         {
-            "name": "vcpkg",
-            "hidden": true,
-            "cacheVariables": {
-                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/vcpkg/scripts/buildsystems/vcpkg.cmake"
-            }
-        },
-        {
             "name": "ninja",
             "hidden": true,
             "generator": "Ninja",
@@ -107,7 +100,6 @@
             "hidden": true,
             "inherits": [
                 "ninja",
-                "vcpkg",
                 "binaryDir"
             ]
         },
@@ -128,6 +120,16 @@
                 "release-build",
                 "defaults"
             ]
+        },
+        {
+            "name": "ci",
+            "description": "CI Configuration",
+            "inherits": [
+                "defaults"
+            ],
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "vcpkg/scripts/buildsystems/vcpkg.cmake"
+            }
         }
     ],
     "buildPresets": [
@@ -138,7 +140,19 @@
         {
             "name": "windows-64-release",
             "configurePreset": "windows-64-default-release"
+        },
+        {
+            "name": "ci",
+            "configurePreset": "ci"
         }
     ],
-    "testPresets": []
+    "testPresets": [
+        {
+            "name": "ci",
+            "configurePreset": "ci",
+            "output": {
+                "outputOnFailure": true
+            }
+        }
+    ]
 }

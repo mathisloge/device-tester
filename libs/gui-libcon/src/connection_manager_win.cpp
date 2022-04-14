@@ -3,6 +3,7 @@
 #include <imgui.h>
 #include "tcp_client_win.hpp"
 #include "tcp_server_win.hpp"
+#include "udp_con_win.hpp"
 #include <gui-common/IconsFontAwesome4.hpp>
 namespace dev::gui
 {
@@ -28,6 +29,10 @@ void ConnectionManagerWin::updateContent()
             if (ImGui::MenuItem("TCP-Server"))
             {
                 current_ = *connections_.emplace(std::make_shared<TcpServerWin>(*manager_, win_manager_)).first;
+            }
+            if (ImGui::MenuItem("UDP-Connection"))
+            {
+                current_ = *connections_.emplace(std::make_shared<UdpConWin>(*manager_, win_manager_)).first;
             }
             ImGui::EndMenu();
         }
