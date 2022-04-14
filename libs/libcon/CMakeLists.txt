@@ -44,6 +44,7 @@ set_target_properties(libcon PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${shared_output_dir}"
 )
 
+install(TARGETS libcon)
 install(FILES ${PROJECT_BINARY_DIR}/libcon_export.hpp DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 if(WIN32)

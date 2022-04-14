@@ -2,6 +2,7 @@ find_package(SDL2 CONFIG REQUIRED)
 
 add_executable(device-tester 
     src/main.cpp
+    src/icon.cpp
     src/application.hpp
     src/application.cpp
     src/application_vulkan.hpp
@@ -30,3 +31,10 @@ set_target_properties(device-tester PROPERTIES
 )
 
 file(COPY resources DESTINATION "${shared_output_dir}")
+install(DIRECTORY resources TYPE BIN)
+install(TARGETS device-tester)
+install(IMPORTED_RUNTIME_ARTIFACTS device-tester RUNTIME_DEPENDENCY_SET runtime-set)
+install(RUNTIME_DEPENDENCY_SET runtime-set   
+    PRE_EXCLUDE_REGEXES "api-ms-" "ext-ms-"
+    POST_EXCLUDE_REGEXES ".*system32/.*\\.dll"
+)

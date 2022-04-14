@@ -7,8 +7,8 @@
 #include <stdio.h>  // printf, fprintf
 #include <stdlib.h> // abort
 #include <vulkan/vulkan.h>
+#include "icon.hpp"
 #include <gui-common/fonts.hpp>
-
 //#define IMGUI_UNLIMITED_FRAME_RATE
 #ifdef _DEBUG
 #define IMGUI_VULKAN_DEBUG_REPORT
@@ -367,7 +367,7 @@ bool ApplicationVulkan::setup()
         (SDL_WindowFlags)(SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
     window_ =
         SDL_CreateWindow(getTitle().c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
-
+    setWindowIcon(window_);
     // Setup Vulkan
     uint32_t extensions_count = 0;
     SDL_Vulkan_GetInstanceExtensions(window_, &extensions_count, NULL);

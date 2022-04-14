@@ -1,4 +1,4 @@
-set(CPACK_PACKAGE_NAME "device-tester")
+set(CPACK_PACKAGE_NAME "DuT-App")
 set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/mathisloge/device-tester")
 set(CPACK_PACKAGE_EXECUTABLES "device-tester;device-tester")
 set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE.txt")

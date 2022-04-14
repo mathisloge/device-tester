@@ -87,5 +87,5 @@ bool Application::shouldRun() const
 
 std::string Application::getTitle()
 {
-    return fmt::format("Device Tester {} - {}", dev::kVersion, dev::kGitRef);
+    return fmt::format("DuT-App {} - {}", dev::kVersion, dev::kGitRef);
 }
