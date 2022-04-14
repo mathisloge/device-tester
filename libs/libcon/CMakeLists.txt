@@ -18,6 +18,7 @@ add_library(libcon STATIC
 )
 target_link_libraries(libcon PRIVATE 
     asio::asio
+    fmt::fmt
     Boost::headers
 )
 generate_export_header(libcon EXPORT_FILE_NAME libcon_export.hpp)

@@ -1,5 +1,6 @@
 #include "raw_data_win.hpp"
 #include <iostream>
+#include <fmt/chrono.h>
 #include <fmt/compile.h>
 #include <fmt/format.h>
 #include <imgui.h>
@@ -41,16 +42,22 @@ void RawDataWin::updateContent()
     {
         const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
         ImGui::BeginChild(
-            "ScrollingRegion", ImVec2(0, -footer_height_to_reserve), false, ImGuiWindowFlags_HorizontalScrollbar);
+            "ScrollingRegion", ImVec2{0, -footer_height_to_reserve}, false, ImGuiWindowFlags_HorizontalScrollbar);
 
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0, 0});
         ImGuiListClipper clipper;
         clipper.Begin(data_.size());
         while (clipper.Step())
+        {
             for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
-                ImGui::TextUnformatted(
-                    fmt::format(FMT_COMPILE("[{}]: {}"), data_[i].type == DataType::send ? "tx" : "rx", data_[i].data)
-                        .c_str());
+            {
+                const std::string text{fmt::format(FMT_COMPILE("[{},{:%H:%M:%S}]: {}"),
+                                                   data_[i].type == DataType::send ? "tx" : "rx",
+                                                   data_[i].ts,
+                                                   data_[i].data)};
+                ImGui::TextUnformatted(text.c_str());
+            }
+        }
 
         if (auto_scroll_ && ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
             ImGui::SetScrollHereY(1.0f);
@@ -59,7 +66,7 @@ void RawDataWin::updateContent()
         ImGui::EndChild();
     }
     ImGui::Separator();
-    ImGui::InputText("", &input_buf_);
+    ImGui::InputText("##udptext", &input_buf_);
     ImGui::SameLine();
     if (ImGui::Button("send") && input_buf_.size() > 0)
     {

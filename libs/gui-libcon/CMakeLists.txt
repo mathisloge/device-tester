@@ -14,7 +14,11 @@ target_include_directories(gui-libcon PUBLIC
     $<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(gui-libcon PUBLIC fmt::fmt gui-common libcon)
+target_link_libraries(gui-libcon PUBLIC 
+    fmt::fmt 
+    gui-common 
+    libcon
+)
 
 set_target_properties(gui-libcon PROPERTIES
     CXX_EXTENSIONS OFF

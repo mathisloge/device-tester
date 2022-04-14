@@ -1,8 +1,9 @@
 #include "libcon/udp_connection.hpp"
+#include <fmt/format.h>
+#include <fmt/compile.h>
 #include <spdlog/spdlog.h>
 #include "basic_client.hpp"
 #include "manager_impl.hpp"
-#include <spdlog/spdlog.h>
 namespace dev::con
 {
 class UdpConnection::Impl final : public BasicClient
@@ -18,7 +19,8 @@ class UdpConnection::Impl final : public BasicClient
         , write_in_progress_{false}
     {}
 
-    ~Impl() {
+    ~Impl()
+    {
         should_run_ = false;
         disconnect();
     }
@@ -26,14 +28,19 @@ class UdpConnection::Impl final : public BasicClient
     void setOptions(const Options &opts)
     {
         opts_ = opts;
-        if (isReceiving()) {
+        if (isReceiving())
+        {
             disconnect();
             startReceive();
         }
-        try {
+        try
+        {
+            connection_str_ = fmt::format(FMT_COMPILE("[UDP] {}"), opts_.write_address);
             const auto addr = asio::ip::make_address(opts_.write_address);
             write_endpoint_ = udp::endpoint(asio::ip::make_address(opts_.write_address), opts.write_port);
-        } catch(const std::exception& e){
+        }
+        catch (const std::exception &e)
+        {
             spdlog::error("UdpConnection: error make_addr: {}", e.what());
         }
     }
@@ -86,24 +93,26 @@ class UdpConnection::Impl final : public BasicClient
         else
             return;
         write_in_progress_ = true;
-        socket_.async_send_to(asio::buffer(tx_current_), write_endpoint_, [this](asio::error_code ec, std::size_t written) {
-            if (!ec)
-            {
-                if (tx_current_.size() > written)
-                    tx_current_.erase(tx_current_.begin(), tx_current_.begin() + written);
-                else if (tx_queue_.is_not_empty())
-                    tx_current_ = std::forward<std::vector<uint8_t>>(tx_queue_.pop_back());
-                else
-                    tx_current_.clear();
-                write_in_progress_ = false;
-                startWrite();
-            }
-        });
+        socket_.async_send_to(
+            asio::buffer(tx_current_), write_endpoint_, [this](asio::error_code ec, std::size_t written) {
+                if (!ec)
+                {
+                    if (tx_current_.size() > written)
+                        tx_current_.erase(tx_current_.begin(), tx_current_.begin() + written);
+                    else if (tx_queue_.is_not_empty())
+                        tx_current_ = std::forward<std::vector<uint8_t>>(tx_queue_.pop_back());
+                    else
+                        tx_current_.clear();
+                    write_in_progress_ = false;
+                    startWrite();
+                }
+            });
     }
 
     void startRead()
     {
-        socket_.async_receive(asio::buffer(buffer_rx_), std::bind(&Impl::handleRead, this, std::placeholders::_1, std::placeholders::_2));
+        socket_.async_receive(asio::buffer(buffer_rx_),
+                              std::bind(&Impl::handleRead, this, std::placeholders::_1, std::placeholders::_2));
     }
 
     void handleRead(const asio::error_code &error, std::size_t n)
@@ -172,12 +181,12 @@ void UdpConnection::setReceiving(bool is_receiving)
 {
     if (is_receiving)
         impl_->startReceive();
-    else 
+    else
         impl_->disconnect();
 }
 
-
-const UdpConnection::Options& UdpConnection::options() const {
+const UdpConnection::Options &UdpConnection::options() const
+{
     return impl_->opts_;
 }
 } // namespace dev::con
