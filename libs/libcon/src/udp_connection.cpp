@@ -1,6 +1,6 @@
 #include "libcon/udp_connection.hpp"
-#include <fmt/format.h>
 #include <fmt/compile.h>
+#include <fmt/format.h>
 #include <spdlog/spdlog.h>
 #include "basic_client.hpp"
 #include "manager_impl.hpp"
@@ -35,7 +35,6 @@ class UdpConnection::Impl final : public BasicClient
         }
         try
         {
-            connection_str_ = fmt::format(FMT_COMPILE("[UDP] {}"), opts_.write_address);
             const auto addr = asio::ip::make_address(opts_.write_address);
             write_endpoint_ = udp::endpoint(asio::ip::make_address(opts_.write_address), opts.write_port);
         }
@@ -131,7 +130,6 @@ class UdpConnection::Impl final : public BasicClient
     }
 
   public:
-    std::string connection_str_;
     Options opts_;
 
   private:
@@ -167,11 +165,6 @@ void UdpConnection::send(std::span<uint8_t> data)
     impl_->write(data);
 }
 
-const std::string &UdpConnection::connectionReadableName() const
-{
-    return impl_->connection_str_;
-}
-
 bool UdpConnection::isReceiving() const
 {
     return impl_->isReceiving();
@@ -183,6 +176,11 @@ void UdpConnection::setReceiving(bool is_receiving)
         impl_->startReceive();
     else
         impl_->disconnect();
+}
+
+std::string UdpConnection::generateReadableName() const
+{
+    return fmt::format(FMT_COMPILE("[UDP] {}"), impl_->opts_.write_address);
 }
 
 const UdpConnection::Options &UdpConnection::options() const

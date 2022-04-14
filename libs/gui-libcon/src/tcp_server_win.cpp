@@ -3,6 +3,7 @@
 #include <fmt/format.h>
 #include <imgui.h>
 #include <imgui_stdlib.h>
+#include "gui_elements.hpp"
 namespace dev::gui
 {
 TcpServerWin::TcpServerWin(con::Manager &manager, WindowManager &win_manager)
@@ -29,27 +30,16 @@ TcpServerWin::~TcpServerWin()
 const std::string &TcpServerWin::title() const
 {
     static const std::string kEmptyName = "[NEW] TCP-Server";
-    if (server_->readableName().empty() && server_->connectionReadableName().empty())
+    if (server_->readableName().empty())
         return kEmptyName;
-    return server_->readableName().empty() ? server_->connectionReadableName() : server_->readableName();
+    return server_->readableName();
 }
 void TcpServerWin::drawTabSettings()
 {
     if (ImGui::InputText("Name", &con_name_))
         server_->setReadableName(con_name_);
 
-    constexpr std::array<const char *, 3> items{"none", "IPv4", "IPv6"};
-    if (static_cast<size_t>(opts_.protocol) >= items.size())
-        opts_.protocol = con::IpProtocol::none;
-    if (ImGui::BeginCombo("IP-Protocol", items[static_cast<size_t>(opts_.protocol)]))
-    {
-        for (size_t i = 0; i < items.size(); i++)
-        {
-            if (ImGui::Selectable(items[i], i == static_cast<size_t>(opts_.protocol)))
-                opts_.protocol = con::IpProtocol(i);
-        }
-        ImGui::EndCombo();
-    }
+    drawIpProtocolSelection(opts_.protocol);
 
     ImGui::InputScalar("Server-Port", ImGuiDataType_U16, &opts_.port);
 
@@ -89,7 +79,9 @@ void TcpServerWin::drawCustomTabs()
     if (ImGui::BeginTabItem("Clients"))
     {
         server_->eachClient([this](con::ITcpServerClient &c) {
-            const auto &title = c.readableName().empty() ? c.connectionReadableName() : c.readableName();
+            if (c.readableName().empty())
+                c.setReadableName(c.generateReadableName());
+            const auto &title = c.readableName();
             ImGui::PushID(&c);
             if (!ImGui::CollapsingHeader(title.c_str()))
             {
@@ -100,7 +92,7 @@ void TcpServerWin::drawCustomTabs()
             const auto raw_data_it = client_wins_.find(&c);
 
             bool has_raw_data = raw_data_it != client_wins_.end();
-            if (ImGui::Checkbox("RawDataWin", &has_raw_data))
+            if (ImGui::Checkbox("Console", &has_raw_data))
             {
                 if (has_raw_data)
                 {

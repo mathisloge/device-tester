@@ -2,7 +2,7 @@
 #include <string>
 namespace dev::con
 {
-class Connection::BaseImpl final
+class BaseConnection::BaseImpl final
 {
   public:
     BaseImpl()
@@ -15,19 +15,23 @@ class Connection::BaseImpl final
     std::string readable_name_;
 };
 
-Connection::Connection()
+BaseConnection::BaseConnection()
     : base_impl_{std::make_unique<BaseImpl>()}
 {}
-Connection::~Connection()
+BaseConnection::~BaseConnection()
 {}
 
-const std::string &Connection::readableName() const
+const std::string &BaseConnection::readableName() const
 {
     return base_impl_->readable_name_;
 }
-void Connection::setReadableName(std::string_view name)
+void BaseConnection::setReadableName(const std::string_view name)
 {
     base_impl_->readable_name_ = name;
 }
 
+Connection::Connection()
+{}
+Connection::~Connection()
+{}
 } // namespace dev::con

@@ -23,7 +23,11 @@ class TcpServerClient :
     void stop();
     void shutdown();
     void send(std::span<uint8_t> data) override;
-    const std::string &connectionReadableName() const override;
+    std::string generateReadableName() const override
+    {
+        const auto &remote_endp = socket_.remote_endpoint();
+        return fmt::format("{}:{}", remote_endp.address().to_string(), remote_endp.port());
+    }
 
     boost::signals2::connection connectOnReceive(const ReiceiveSignal::slot_type &sub) override;
 
@@ -39,7 +43,6 @@ class TcpServerClient :
     tcp::socket socket_;
     TcpServerManager &manager_;
     std::array<uint8_t, 65535> rx_buffer_;
-    std::string connection_name_;
 };
 using TcpServerClientPtr = std::shared_ptr<TcpServerClient>;
 using TcpServerClients = std::set<TcpServerClientPtr>;
@@ -110,11 +113,8 @@ class TcpServer::Impl final
         stop();
         if (opts_.protocol == IpProtocol::none)
         {
-            connection_name_ = "[tcp-server] none";
             return;
         }
-        connection_name_ =
-            fmt::format("[tcp-server] {}::{}", opts_.protocol == IpProtocol::ipv4 ? "ipv4" : "ipv6", opts_.port);
         tcp::endpoint endpoint(opts_.protocol == IpProtocol::ipv4 ? tcp::v4() : tcp::v6(), opts_.port);
         acceptor_.open(endpoint.protocol());
         // acceptor_.set_option(...);
@@ -168,7 +168,6 @@ class TcpServer::Impl final
   public:
     Options opts_;
     std::string readable_name_;
-    std::string connection_name_;
     TcpServerManager manager_;
 
   private:
@@ -208,21 +207,6 @@ const TcpServer::Options &TcpServer::options() const
     return impl_->opts_;
 }
 
-const std::string &TcpServer::connectionReadableName() const
-{
-    return impl_->connection_name_;
-}
-
-const std::string &TcpServer::readableName() const
-{
-    return impl_->readable_name_;
-}
-
-void TcpServer::setReadableName(std::string_view name)
-{
-    impl_->readable_name_ = name;
-}
-
 void TcpServer::sendToAll(std::span<uint8_t> data)
 {
     for (const auto &c : impl_->manager_.clients())
@@ -248,6 +232,16 @@ boost::signals2::connection TcpServer::connectClientState(const ClientStateSigna
     return impl_->manager_.connectClientState(sub);
 }
 
+std::string TcpServer::generateReadableName() const
+{
+    if (impl_->opts_.protocol == IpProtocol::none)
+    {
+        return "[tcp-server] none";
+    }
+    return fmt::format(
+        "[tcp-server] {}::{}", impl_->opts_.protocol == IpProtocol::ipv4 ? "ipv4" : "ipv6", impl_->opts_.port);
+}
+
 ////! CLIENT
 TcpServerClient::TcpServerClient(tcp::socket socket, TcpServerManager &manager)
     : do_run_{true}
@@ -258,8 +252,6 @@ void TcpServerClient::start()
 {
     do_run_ = true;
     startRead();
-    const auto &remote_endp = socket_.remote_endpoint();
-    connection_name_ = fmt::format("{}:{}", remote_endp.address().to_string(), remote_endp.port());
 }
 void TcpServerClient::stop()
 {
@@ -324,10 +316,6 @@ void TcpServerClient::startWrite()
     });
 }
 
-const std::string &TcpServerClient::connectionReadableName() const
-{
-    return connection_name_;
-}
 boost::signals2::connection TcpServerClient::connectOnReceive(const ReiceiveSignal::slot_type &sub)
 {
     return Receiver::connectOnReceive(sub);

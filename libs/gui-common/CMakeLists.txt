@@ -17,4 +17,5 @@ set_target_properties(gui-common PROPERTIES
     CXX_EXTENSIONS OFF
     CXX_STANDARD 20
     CXX_STANDARD_REQUIRED ON
+    RUNTIME_OUTPUT_DIRECTORY "${shared_output_dir}"
 )

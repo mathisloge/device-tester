@@ -27,6 +27,7 @@
         "vulkan"
       ]
     },
-    "spdlog"
+    "spdlog",
+    "libcoap"
   ]
 }

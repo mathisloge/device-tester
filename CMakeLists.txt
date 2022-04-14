@@ -18,5 +18,8 @@ find_package(fmt CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 
+
+set(shared_output_dir "${CMAKE_CURRENT_BINARY_DIR}/out")
+
 add_subdirectory(libs)
 add_subdirectory(app)

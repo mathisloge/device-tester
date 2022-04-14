@@ -46,7 +46,7 @@ class LIBCON_EXPORT Serial : public Connection
 
     void send(std::span<uint8_t> data) override;
     boost::signals2::connection connectOnReceive(const ReiceiveSignal::slot_type &sub) override;
-    const std::string &connectionReadableName() const override;
+    std::string generateReadableName() const override;
 
   private:
     class Impl;

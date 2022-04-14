@@ -14,7 +14,27 @@ enum class IpProtocol
     ipv4,
     ipv6
 };
-class LIBCON_EXPORT Connection
+
+class LIBCON_EXPORT BaseConnection
+{
+  public:
+    BaseConnection();
+    virtual ~BaseConnection();
+    BaseConnection(const BaseConnection &) = delete;
+    BaseConnection(BaseConnection &&) = delete;
+    BaseConnection &operator=(const BaseConnection &) = delete;
+    BaseConnection &operator=(BaseConnection &&) = delete;
+
+    const std::string &readableName() const;
+    void setReadableName(const std::string_view name);
+    virtual std::string generateReadableName() const = 0;
+
+  private:
+    class BaseImpl;
+    std::unique_ptr<BaseImpl> base_impl_;
+};
+
+class LIBCON_EXPORT Connection : public BaseConnection
 {
   public:
     using ReiceiveSignal = boost::signals2::signal<void(std::span<uint8_t>)>;
@@ -22,20 +42,7 @@ class LIBCON_EXPORT Connection
   public:
     Connection();
     virtual ~Connection();
-    Connection(const Connection &) = delete;
-    Connection(Connection &&) = delete;
-    Connection &operator=(const Connection &) = delete;
-    Connection &operator=(Connection &&) = delete;
-
     virtual boost::signals2::connection connectOnReceive(const ReiceiveSignal::slot_type &sub) = 0;
     virtual void send(std::span<uint8_t> data) = 0;
-
-    virtual const std::string &connectionReadableName() const = 0;
-    const std::string &readableName() const;
-    void setReadableName(std::string_view name);
-
-  private:
-    class BaseImpl;
-    std::unique_ptr<BaseImpl> base_impl_;
 };
 } // namespace dev::con

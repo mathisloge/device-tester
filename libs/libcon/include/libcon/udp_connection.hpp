@@ -19,14 +19,15 @@ class LIBCON_EXPORT UdpConnection : public Connection
   public:
     UdpConnection(Manager &manager);
     virtual ~UdpConnection();
-    const Options& options() const;
+    const Options &options() const;
     void setOptions(const Options &opts);
     bool isReceiving() const;
     void setReceiving(bool is_receiving);
 
     void send(std::span<uint8_t> data) override;
-    const std::string &connectionReadableName() const override;
     boost::signals2::connection connectOnReceive(const ReiceiveSignal::slot_type &sub) override;
+
+    std::string generateReadableName() const override;
 
   private:
     class Impl;

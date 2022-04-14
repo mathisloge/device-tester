@@ -92,7 +92,8 @@ void Serial::setOptions(const Options &opts)
 {
     impl_->opts_ = opts;
 }
-const std::string &Serial::connectionReadableName() const
+
+std::string Serial::generateReadableName() const
 {
     return impl_->connection_str_;
 }

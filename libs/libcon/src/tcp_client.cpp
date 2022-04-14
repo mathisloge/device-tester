@@ -76,8 +76,8 @@ class TcpClient::Impl final : public BasicClient
     {
         if (!ec)
         {
-            spdlog::debug("[tcp] {}:{}", endpoint.address().to_string(), endpoint.port());
-            connection_str_ = fmt::format("[tcp] {}:{}", endpoint.address().to_string(), endpoint.port());
+            spdlog::debug("[tcp-client] {}:{}", endpoint.address().to_string(), endpoint.port());
+            connection_str_ = fmt::format("[tcp-client] {}:{}", endpoint.address().to_string(), endpoint.port());
             startRead();
         }
         else
@@ -179,10 +179,11 @@ void TcpClient::send(std::span<uint8_t> data)
     impl_->write(data);
 }
 
-const std::string &TcpClient::connectionReadableName() const
+std::string TcpClient::generateReadableName() const
 {
     return impl_->connection_str_;
 }
+
 bool TcpClient::isConnected() const
 {
     return impl_->isConnected();

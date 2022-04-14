@@ -26,6 +26,7 @@ set_target_properties(device-tester PROPERTIES
     CXX_STANDARD 20
     CXX_STANDARD_REQUIRED ON
     CXX_EXTENSIONS OFF
+    RUNTIME_OUTPUT_DIRECTORY "${shared_output_dir}"
 )
 
-file(COPY resources DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY resources DESTINATION "${shared_output_dir}")

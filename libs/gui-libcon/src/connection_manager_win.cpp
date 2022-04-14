@@ -1,6 +1,7 @@
 #include "gui-libcon/connection_manager_win.hpp"
 #include <fmt/format.h>
 #include <imgui.h>
+#include "coap_client_win.hpp"
 #include "tcp_client_win.hpp"
 #include "tcp_server_win.hpp"
 #include "udp_con_win.hpp"
@@ -33,6 +34,10 @@ void ConnectionManagerWin::updateContent()
             if (ImGui::MenuItem("UDP-Connection"))
             {
                 current_ = *connections_.emplace(std::make_shared<UdpConWin>(*manager_, win_manager_)).first;
+            }
+            if (ImGui::MenuItem("COAP Client"))
+            {
+                current_ = *connections_.emplace(std::make_shared<CoapClientWin>(win_manager_)).first;
             }
             ImGui::EndMenu();
         }

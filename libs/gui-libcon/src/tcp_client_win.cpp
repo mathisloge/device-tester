@@ -17,9 +17,9 @@ TcpClientWin::~TcpClientWin()
 const std::string &TcpClientWin::title() const
 {
     static const std::string kEmptyName = "[NEW] TCP";
-    if (client_->readableName().empty() && client_->connectionReadableName().empty())
+    if (client_->readableName().empty())
         return kEmptyName;
-    return client_->readableName().empty() ? client_->connectionReadableName() : client_->readableName();
+    return client_->readableName();
 }
 void TcpClientWin::drawTabSettings()
 {
@@ -57,7 +57,7 @@ void TcpClientWin::drawTabSettings()
 void TcpClientWin::drawTabDetails()
 {
     bool has_raw_win = raw_win_ != nullptr;
-    if (ImGui::Checkbox("RawDataWin", &has_raw_win))
+    if (ImGui::Checkbox("Console", &has_raw_win))
     {
         if (has_raw_win)
         {

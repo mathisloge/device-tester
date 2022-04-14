@@ -10,7 +10,7 @@ namespace dev::con
 class LIBCON_EXPORT ITcpServerClient : public Connection
 {};
 
-class LIBCON_EXPORT TcpServer
+class LIBCON_EXPORT TcpServer : public BaseConnection
 {
   public:
     struct Options
@@ -35,14 +35,12 @@ class LIBCON_EXPORT TcpServer
     void start();
     void stop();
 
-    const std::string &connectionReadableName() const;
-    const std::string &readableName() const;
-    void setReadableName(std::string_view name);
-
     void sendToAll(std::span<uint8_t> data);
     int numberOfConnectedClients() const;
     void eachClient(const std::function<void(ITcpServerClient &client)> &pred);
-    boost::signals2::connection connectClientState(const ClientStateSignal::slot_type& sub);
+    boost::signals2::connection connectClientState(const ClientStateSignal::slot_type &sub);
+    
+    std::string generateReadableName() const override;
 
   private:
     class Impl;
