@@ -24,14 +24,10 @@ LuaPlugin::LuaPlugin(const std::filesystem::path &plugin_file)
     }
 
     sol::table plugin = lua_["plugin"];
-    sol::table data_generators = plugin["data_generators"];
     name_ = plugin.get<std::string>("name");
     description_ = plugin.get<std::string>("description");
     spdlog::info("Plugin: {}", name_);
     spdlog::info("Description: {}", description_);
-
-    const std::string bytes = data_generators["first_message"]();
-    spdlog::info("Bytes: {}", bytes.size());
 }
 LuaPlugin::~LuaPlugin()
 {}

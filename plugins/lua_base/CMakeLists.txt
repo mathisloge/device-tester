@@ -32,6 +32,7 @@ set_target_properties(lua-base PROPERTIES
 )
 
 file(COPY lua_protobuf/protoc.lua DESTINATION "${shared_output_dir}/lua/modules")
+file(COPY my_plugins/ DESTINATION "${shared_output_dir}/lua/plugins")
 install(FILES lua_protobuf/protoc.lua DESTINATION ${CMAKE_INSTALL_PLUGINDIR}/lua/modules)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libcon_export.hpp" TYPE INCLUDE)
 install(TARGETS lua-base)
