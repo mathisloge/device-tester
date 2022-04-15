@@ -1,5 +1,3 @@
-project(libcon)
-
 find_package(asio CONFIG REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(libcoap CONFIG REQUIRED)
@@ -45,7 +43,7 @@ set_target_properties(libcon PROPERTIES
 )
 
 install(TARGETS libcon)
-install(FILES ${PROJECT_BINARY_DIR}/libcon_export.hpp DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libcon_export.hpp" TYPE INCLUDE)
 
 if(WIN32)
     target_compile_definitions(libcon PRIVATE _WIN32_WINNT=0x0A00)

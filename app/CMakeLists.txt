@@ -24,6 +24,7 @@ target_link_libraries(device-tester PRIVATE
     imgui::imgui
     gui-common
     gui-libcon
+    gui-plugins
 )
 configure_file (
     "${CMAKE_CURRENT_SOURCE_DIR}/version.hpp.in" 

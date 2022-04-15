@@ -21,13 +21,15 @@
       ]
     },
     "implot",
+    "libcoap",
+    "lua",
     {
       "name": "sdl2",
       "features": [
         "vulkan"
       ]
     },
-    "spdlog",
-    "libcoap"
+    "sol2",
+    "spdlog"
   ]
 }

@@ -1,0 +1,3 @@
+[submodule "plugins/lua_base/lua_protobuf"]
+	path = plugins/lua_base/lua_protobuf
+	url = https://github.com/starwing/lua-protobuf

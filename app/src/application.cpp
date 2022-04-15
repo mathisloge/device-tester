@@ -8,7 +8,10 @@ Application::Application()
     : run_render_loop_{false}
     , connection_manager_{std::make_shared<dev::con::Manager>()}
     , connection_manager_win_{win_manager_, connection_manager_}
-{}
+    , ptest_{std::make_shared<dev::gui::PluginTest>()}
+{
+    win_manager_.registerWindow(ptest_);
+}
 
 Application::~Application()
 {}
