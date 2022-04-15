@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <span>
 #include <string>
 #include "connection.hpp"
 #include "manager.hpp"
@@ -28,14 +29,18 @@ class LIBCON_EXPORT CoapClient : public BaseConnection
         m_put,
         m_delete
     };
+    using RequestId = uint32_t;
+    static constexpr RequestId kRequestIdWellKnown = std::numeric_limits<RequestId>::max();
 
   public:
     CoapClient(Manager &manager);
     virtual ~CoapClient();
 
-    void applyOptions(const Options &opts);
+    void setOptions(const Options &opts);
+    const Options &options() const;
 
     void getWellKnown(const std::string path = ".well-known/core");
+    void makeRequest(const Method method, const std::string &path, const RequestId id, const std::span<uint8_t> data = {});
 
     std::string generateReadableName() const override;
 

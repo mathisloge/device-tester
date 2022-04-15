@@ -20,10 +20,10 @@ class CoapClientWin final : public ConnectionWin
 
   private:
     WindowManager &win_manager_;
-    std::shared_ptr<con::CoapClient> connection_;
-    std::shared_ptr<RawDataWin> raw_win_;
+    std::shared_ptr<con::CoapClient> client_;
     con::CoapClient::Options opts_;
+    std::shared_ptr<RawDataWin> raw_win_;
 
-    std::string client_title_;
+    std::string client_name_;
 };
 } // namespace dev::gui
