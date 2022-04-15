@@ -11,9 +11,9 @@ class LuaBase::Impl final
     ~Impl()
     {}
 
-    void addPlugin(const std::filesystem::path &plugin_file)
+    LuaPluginBase &addPlugin(const std::filesystem::path &plugin_file)
     {
-        loaded_plugins_.emplace_back(std::make_unique<LuaPlugin>(plugin_file));
+        return *loaded_plugins_.emplace_back(std::make_unique<LuaPlugin>(plugin_file));
     }
 
   private:
@@ -25,8 +25,13 @@ LuaBase::LuaBase()
 {}
 LuaBase::~LuaBase()
 {}
-void LuaBase::addPlugin(const std::filesystem::path &plugin_file)
+LuaPluginBase &LuaBase::addPlugin(const std::filesystem::path &plugin_file)
 {
-    impl_->addPlugin(plugin_file);
+    return impl_->addPlugin(plugin_file);
 }
+
+LuaPluginBase::LuaPluginBase()
+{}
+LuaPluginBase::~LuaPluginBase()
+{}
 } // namespace dev::lua

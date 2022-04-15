@@ -17,7 +17,7 @@ find_package(Boost REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
-
+find_package(unofficial-nativefiledialog CONFIG REQUIRED)
 
 set(shared_output_dir "${CMAKE_CURRENT_BINARY_DIR}/out")
 set(CMAKE_INSTALL_PLUGINDIR ${CMAKE_INSTALL_BINDIR}/plugins)

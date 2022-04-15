@@ -1,5 +1,5 @@
 add_library(gui-plugins STATIC
-    src/plugin_test.cpp
+    src/plugin_manager_win.cpp
 )
 target_include_directories(gui-plugins PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -9,6 +9,7 @@ target_include_directories(gui-plugins PUBLIC
 
 target_link_libraries(gui-plugins PUBLIC 
     fmt::fmt 
+    unofficial::nativefiledialog::nfd
     gui-common
     lua-base
 )

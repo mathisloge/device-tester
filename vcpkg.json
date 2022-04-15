@@ -23,6 +23,7 @@
     "implot",
     "libcoap",
     "lua",
+    "nativefiledialog",
     {
       "name": "sdl2",
       "features": [

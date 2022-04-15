@@ -3,11 +3,11 @@
 #include <gui-common/window.hpp>
 namespace dev::gui
 {
-class PluginTest final : public Window
+class PluginManagerWin final : public Window
 {
   public:
-    PluginTest();
-    ~PluginTest();
+    PluginManagerWin();
+    ~PluginManagerWin();
     void updateContent() override;
 
   private:

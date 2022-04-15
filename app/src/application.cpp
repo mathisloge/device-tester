@@ -8,9 +8,9 @@ Application::Application()
     : run_render_loop_{false}
     , connection_manager_{std::make_shared<dev::con::Manager>()}
     , connection_manager_win_{win_manager_, connection_manager_}
-    , ptest_{std::make_shared<dev::gui::PluginTest>()}
+    , plugin_manager_win_{std::make_shared<dev::gui::PluginManagerWin>()}
 {
-    win_manager_.registerWindow(ptest_);
+    win_manager_.registerWindow(plugin_manager_win_);
 }
 
 Application::~Application()
@@ -37,6 +37,7 @@ void Application::menuBar()
         if (ImGui::BeginMenu("File"))
         {
             ImGui::MenuItem("Connection Manager", "", &connection_manager_win_.open());
+            ImGui::MenuItem("Plugin Manager", "", &plugin_manager_win_->open());
             ImGui::Separator();
             if (ImGui::MenuItem("Exit"))
             {

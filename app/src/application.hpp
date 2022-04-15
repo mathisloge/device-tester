@@ -3,7 +3,7 @@
 #include <libcon/manager.hpp>
 #include <gui-common/window_manager.hpp>
 #include <gui-libcon/connection_manager_win.hpp>
-#include <plugin_test.hpp>
+#include <gui-plugins/plugin_manager_win.hpp>
 class Application
 {
   public:
@@ -26,8 +26,7 @@ class Application
     dev::gui::WindowManager win_manager_;
     std::shared_ptr<dev::con::Manager> connection_manager_;
     dev::gui::ConnectionManagerWin connection_manager_win_;
-    
-    std::shared_ptr<dev::gui::PluginTest> ptest_;
+    std::shared_ptr<dev::gui::PluginManagerWin> plugin_manager_win_;
 
   protected:
     static std::string getTitle();
