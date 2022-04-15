@@ -9,6 +9,7 @@ Application::Application()
     , connection_manager_{std::make_shared<dev::con::Manager>()}
     , connection_manager_win_{win_manager_, connection_manager_}
     , plugin_manager_win_{std::make_shared<dev::gui::PluginManagerWin>()}
+    , show_about_modal_{false}
 {
     win_manager_.registerWindow(plugin_manager_win_);
 }
@@ -45,8 +46,37 @@ void Application::menuBar()
             }
             ImGui::EndMenu();
         }
+        if (ImGui::BeginMenu("Help"))
+        {
+            ImGui::MenuItem("About", "", &show_about_modal_);
+            ImGui::EndMenu();
+        }
         ImGui::EndMainMenuBar();
     }
+}
+
+void Application::aboutModal()
+{
+    if (!show_about_modal_)
+        return;
+    if (!ImGui::Begin("About DuT-App",
+                      &show_about_modal_,
+                      ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
+                          ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDocking))
+    {
+
+        ImGui::End();
+        return;
+    }
+    ImGui::Text("Version: %s", dev::kVersion);
+    ImGui::Text("GIT REF: %s", dev::kGitRef);
+    ImGui::Text("GIT SPEC: %s", dev::kGitRefSpec);
+    ImGui::Separator();
+    ImGui::Text("By Mathis Logemann.");
+    ImGui::Text("DuT-App is licensed under the MIT License, see LICENSE for more information.");
+    ImGui::Separator();
+
+    ImGui::End();
 }
 
 void Application::renderImgui()
@@ -70,6 +100,7 @@ void Application::renderImgui()
         ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
         ImGui::End();
     }
+    aboutModal();
 
     menuBar();
 

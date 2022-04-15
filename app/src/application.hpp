@@ -20,6 +20,7 @@ class Application
 
   private:
     void menuBar();
+    void aboutModal();
 
   private:
     bool run_render_loop_;
@@ -27,6 +28,8 @@ class Application
     std::shared_ptr<dev::con::Manager> connection_manager_;
     dev::gui::ConnectionManagerWin connection_manager_win_;
     std::shared_ptr<dev::gui::PluginManagerWin> plugin_manager_win_;
+
+    bool show_about_modal_;
 
   protected:
     static std::string getTitle();
