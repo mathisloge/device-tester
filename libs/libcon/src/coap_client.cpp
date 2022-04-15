@@ -12,56 +12,35 @@ namespace dev::con
 
 class CoapClient::Impl final
 {
-    static std::shared_mutex s_coap_session_lookup_mtx_;
-    static std::map<coap_session_t *, Impl *> s_coap_session_lookup_;
     // clang-format off
-    struct CoapCtxDeleter { void operator()(coap_context_t *ctx) { if (ctx) coap_free_context(ctx); } };
+    struct CoapCtxDeleter { void operator()(coap_context_t *ctx) { if (ctx) { coap_free_context(ctx); } } };
+    struct CoapSessionDeleter { void operator()(coap_session_t *sess) { if (sess) { coap_session_release(sess); } } };
     // clang-format on
-    struct CoapSessionDeleter
-    {
-        void operator()(coap_session_t *sess)
-        {
-            if (sess)
-            {
-                RemoveCoapMessageCallback(sess);
-                coap_session_release(sess);
-            }
-        }
-    };
 
     static coap_response_t CoapMessageCallback(coap_session_t *session,
                                                const coap_pdu_t *sent,
                                                const coap_pdu_t *received,
                                                const coap_mid_t mid)
     {
-        std::shared_lock<std::shared_mutex> l{s_coap_session_lookup_mtx_};
-        auto it = s_coap_session_lookup_.find(session);
-        if (it != s_coap_session_lookup_.end())
+        Impl *impl = reinterpret_cast<Impl *>(coap_session_get_app_data(session));
+        if (impl)
         {
-            const auto ret_code = it->second->messageCallback(session, sent, received, mid);
+            const auto ret_code = impl->messageCallback(session, sent, received, mid);
             spdlog::info("CODE {}", ret_code);
             return ret_code;
         }
         spdlog::error("couldn't find coap impl by session");
         return COAP_RESPONSE_OK;
     }
-    static bool AddCoapMessageCallback(coap_session_t *session, Impl *impl)
-    {
-        std::unique_lock<std::shared_mutex> l{s_coap_session_lookup_mtx_};
-        return s_coap_session_lookup_.emplace(session, impl).second;
-    }
-    static bool RemoveCoapMessageCallback(coap_session_t *session)
-    {
-        std::unique_lock<std::shared_mutex> l{s_coap_session_lookup_mtx_};
-        return s_coap_session_lookup_.erase(session);
-    }
     static void FreeLargeDataCallback(coap_session_t *session, void *app_ptr)
     {
-        std::shared_lock<std::shared_mutex> l{s_coap_session_lookup_mtx_};
-        auto it = s_coap_session_lookup_.find(session);
-        if (it != s_coap_session_lookup_.end())
-            return it->second->freeLargeData(reinterpret_cast<size_t>(app_ptr));
-        spdlog::error("FreeLargeData; couldn't find coap impl by session");
+        Impl *impl = reinterpret_cast<Impl *>(coap_session_get_app_data(session));
+        if (!impl)
+        {
+            spdlog::error("FreeLargeData; couldn't find coap impl by session");
+            return;
+        }
+        impl->freeLargeData(reinterpret_cast<size_t>(app_ptr));
     }
 
   public:
@@ -205,8 +184,9 @@ class CoapClient::Impl final
         auto new_session = coap_new_client_session(ctx_.get(), bind_addr, &dst, COAP_PROTO_UDP);
         {
             std::unique_lock<std::shared_mutex> l{coap_mtx_};
+
+            coap_session_set_app_data(new_session, this); // save the reference
             session_ = std::unique_ptr<coap_session_t, CoapSessionDeleter>(new_session, CoapSessionDeleter{});
-            AddCoapMessageCallback(new_session, this);
         }
     }
 
@@ -411,8 +391,6 @@ class CoapClient::Impl final
     Options opts_;
     RxSig rx_signal_;
 };
-std::shared_mutex CoapClient::Impl::s_coap_session_lookup_mtx_;
-std::map<coap_session_t *, CoapClient::Impl *> CoapClient::Impl::s_coap_session_lookup_;
 
 void CoapClient::DiscoverServers()
 {
