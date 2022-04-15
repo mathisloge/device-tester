@@ -196,7 +196,7 @@ void TcpClient::disconnect()
 {
     impl_->disconnect();
 }
-boost::signals2::connection TcpClient::connectOnReceive(const ReiceiveSignal::slot_type &sub)
+sig::connection TcpClient::connectOnReceive(const RxSig::slot_type &sub)
 {
     return impl_->connectOnReceive(sub);
 }

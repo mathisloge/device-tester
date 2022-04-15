@@ -3,16 +3,20 @@
 #include <span>
 #include <system_error>
 #include "libcon/connection.hpp"
+
+namespace dev::con
+{
 class Receiver
 {
   public:
     Receiver();
     virtual ~Receiver();
-    boost::signals2::connection connectOnReceive(const dev::con::Connection::ReiceiveSignal::slot_type &sub);
+    sig::connection connectOnReceive(const Connection::RxSig::slot_type &sub);
 
   protected:
     void onReceive(std::span<uint8_t> data);
 
   private:
-    dev::con::Connection::ReiceiveSignal resv_sig_;
+    Connection::RxSig resv_sig_;
 };
+} // namespace dev::con

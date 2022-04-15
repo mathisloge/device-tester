@@ -25,7 +25,7 @@ class LIBCON_EXPORT UdpConnection : public Connection
     void setReceiving(bool is_receiving);
 
     void send(std::span<uint8_t> data) override;
-    boost::signals2::connection connectOnReceive(const ReiceiveSignal::slot_type &sub) override;
+    sig::connection connectOnReceive(const RxSig::slot_type &sub) override;
 
     std::string generateReadableName() const override;
 

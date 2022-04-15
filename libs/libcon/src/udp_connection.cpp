@@ -150,7 +150,7 @@ UdpConnection::UdpConnection(Manager &manager)
 UdpConnection::~UdpConnection()
 {}
 
-boost::signals2::connection UdpConnection::connectOnReceive(const Connection::ReiceiveSignal::slot_type &sub)
+sig::connection UdpConnection::connectOnReceive(const RxSig::slot_type &sub)
 {
     return impl_->connectOnReceive(sub);
 }

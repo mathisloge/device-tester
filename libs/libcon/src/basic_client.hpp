@@ -2,6 +2,8 @@
 #include <asio.hpp>
 #include "receiver.hpp"
 #include "writer.hpp"
+namespace dev::con
+{
 class BasicClient : public Writer, public Receiver
 {
   public:
@@ -11,3 +13,4 @@ class BasicClient : public Writer, public Receiver
   protected:
     asio::strand<asio::any_io_executor> strand_;
 };
+} // namespace dev::con

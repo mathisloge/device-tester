@@ -29,7 +29,7 @@ class TcpServerClient :
         return fmt::format("{}:{}", remote_endp.address().to_string(), remote_endp.port());
     }
 
-    boost::signals2::connection connectOnReceive(const ReiceiveSignal::slot_type &sub) override;
+    sig::connection connectOnReceive(const RxSig::slot_type &sub) override;
 
   private:
     void doWrite() override;
@@ -316,10 +316,11 @@ void TcpServerClient::startWrite()
     });
 }
 
-boost::signals2::connection TcpServerClient::connectOnReceive(const ReiceiveSignal::slot_type &sub)
+sig::connection TcpServerClient::connectOnReceive(const RxSig::slot_type &sub)
 {
     return Receiver::connectOnReceive(sub);
 }
+
 void TcpServerClient::send(std::span<uint8_t> data)
 {
     write(data);

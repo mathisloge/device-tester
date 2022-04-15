@@ -3,8 +3,8 @@
 #include <memory>
 #include <span>
 #include <string_view>
-#include <boost/signals2.hpp>
 #include "libcon_export.hpp"
+#include "types.hpp"
 
 namespace dev::con
 {
@@ -37,12 +37,12 @@ class LIBCON_EXPORT BaseConnection
 class LIBCON_EXPORT Connection : public BaseConnection
 {
   public:
-    using ReiceiveSignal = boost::signals2::signal<void(std::span<uint8_t>)>;
+    using RxSig = sig::signal<void(std::span<uint8_t>)>;
 
   public:
     Connection();
     virtual ~Connection();
-    virtual boost::signals2::connection connectOnReceive(const ReiceiveSignal::slot_type &sub) = 0;
+    virtual sig::connection connectOnReceive(const RxSig::slot_type &sub) = 0;
     virtual void send(std::span<uint8_t> data) = 0;
 };
 } // namespace dev::con

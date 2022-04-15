@@ -54,7 +54,7 @@ void UdpConWin::drawTabDetails()
         if (has_raw_win)
         {
             raw_win_ = std::make_shared<RawDataWin>(title(), reinterpret_cast<intptr_t>(this));
-            connection_->connectOnReceive(con::Connection::ReiceiveSignal::slot_type{[this](std::span<uint8_t> d) {
+            connection_->connectOnReceive(con::Connection::RxSig::slot_type{[this](std::span<uint8_t> d) {
                                               raw_win_->addData(d);
                                           }}.track_foreign(raw_win_));
             raw_win_->connectSend(std::bind(&con::UdpConnection::send, &(*connection_), std::placeholders::_1));

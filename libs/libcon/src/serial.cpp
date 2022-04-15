@@ -98,7 +98,7 @@ std::string Serial::generateReadableName() const
     return impl_->connection_str_;
 }
 
-boost::signals2::connection Serial::connectOnReceive(const ReiceiveSignal::slot_type &sub)
+sig::connection Serial::connectOnReceive(const RxSig::slot_type &sub)
 {
     return impl_->connectOnReceive(sub);
 }

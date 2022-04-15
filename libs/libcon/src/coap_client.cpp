@@ -141,7 +141,7 @@ class CoapClient::Impl final
         uint8_t token[8];
         size_t tokenlen;
         coap_session_new_token(session_.get(), &tokenlen, token);
-        track_new_token(tokenlen, token);
+        track_new_token(tokenlen, token, id);
         if (!coap_add_token(pdu, tokenlen, token))
         {
             spdlog::error("cannot add token to request");
@@ -222,7 +222,8 @@ class CoapClient::Impl final
         coap_show_pdu(LOG_INFO, received);
 
         /* check if this is a response to our original request */
-        if (!track_check_token(&token))
+        const auto [same_token, req_id] = track_check_token(&token);
+        if (!same_token)
         {
             /* drop if this was just some message, or send RST in case of notification */
             if (!sent && (rcv_type == COAP_MESSAGE_CON || rcv_type == COAP_MESSAGE_NON))
@@ -259,6 +260,7 @@ class CoapClient::Impl final
             size_t total;
             if (coap_get_data_large(received, &len, &databuf, &offset, &total))
             {
+                rx_signal_(req_id, std::span<const uint8_t>(databuf, len));
                 // append_to_output(databuf, len);
                 // if ((len + offset == total) && add_nl)
                 //     append_to_output((const uint8_t *)"\n", 1);
@@ -318,7 +320,7 @@ class CoapClient::Impl final
     }
 
     //! TODO REFACTOR THOSE FUNCTIONS
-    void track_new_token(size_t tokenlen, uint8_t *token)
+    void track_new_token(size_t tokenlen, uint8_t *token, RequestId id)
     {
         track_token *new_list =
             (track_token *)realloc(tracked_tokens, (tracked_tokens_count + 1) * sizeof(tracked_tokens[0]));
@@ -333,28 +335,25 @@ class CoapClient::Impl final
             return;
         memcpy(tracked_tokens[tracked_tokens_count].token->s, token, tokenlen);
         tracked_tokens[tracked_tokens_count].observe = doing_observe;
+        tracked_tokens[tracked_tokens_count].id = id;
         tracked_tokens_count++;
     }
 
-    bool track_check_token(const coap_bin_const_t *token) const
+    std::pair<bool, RequestId> track_check_token(const coap_bin_const_t *token) const
     {
-        size_t i;
-
-        for (i = 0; i < tracked_tokens_count; i++)
+        for (size_t i = 0; i < tracked_tokens_count; i++)
         {
             if (coap_binary_equal(token, tracked_tokens[i].token))
             {
-                return true;
+                return {true, tracked_tokens[i].id};
             }
         }
-        return false;
+        return {false, 0};
     }
 
     void track_flush_token(const coap_bin_const_t *token)
     {
-        size_t i;
-
-        for (i = 0; i < tracked_tokens_count; i++)
+        for (size_t i = 0; i < tracked_tokens_count; i++)
         {
             if (coap_binary_equal(token, tracked_tokens[i].token))
             {
@@ -389,7 +388,6 @@ class CoapClient::Impl final
     asio::strand<asio::any_io_executor> strand_;
     std::unique_ptr<coap_context_t, CoapCtxDeleter> ctx_;
     std::unique_ptr<coap_session_t, CoapSessionDeleter> session_;
-
     struct
     {
         std::mutex mtx;
@@ -397,11 +395,12 @@ class CoapClient::Impl final
         std::map<size_t, std::vector<uint8_t>> buffer;
     } large_data_;
 
-    typedef struct
+    struct track_token
     {
+        RequestId id;
         coap_binary_t *token;
         int observe;
-    } track_token;
+    };
     track_token *tracked_tokens = NULL;
     size_t tracked_tokens_count = 0;
     int obs_started = 0;
@@ -410,6 +409,7 @@ class CoapClient::Impl final
 
   public:
     Options opts_;
+    RxSig rx_signal_;
 };
 std::shared_mutex CoapClient::Impl::s_coap_session_lookup_mtx_;
 std::map<coap_session_t *, CoapClient::Impl *> CoapClient::Impl::s_coap_session_lookup_;
@@ -461,6 +461,11 @@ void CoapClient::makeRequest(const Method method,
 std::string CoapClient::generateReadableName() const
 {
     return fmt::format("[COAP-Client] {}", impl_->opts_.server_uri);
+}
+
+sig::connection CoapClient::connectOnReceive(const RxSig::slot_type &sub)
+{
+    return impl_->rx_signal_.connect(sub);
 }
 
 } // namespace dev::con

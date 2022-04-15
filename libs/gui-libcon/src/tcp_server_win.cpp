@@ -102,7 +102,7 @@ void TcpServerWin::drawCustomTabs()
                     {
                         auto raw_win = emplaced.first->second;
                         win_manager_.registerWindow(raw_win);
-                        c.connectOnReceive(con::Connection::ReiceiveSignal::slot_type{[raw_win](std::span<uint8_t> d) {
+                        c.connectOnReceive(con::Connection::RxSig::slot_type{[raw_win](std::span<uint8_t> d) {
                                                raw_win->addData(d);
                                            }}.track_foreign(emplaced.first->second));
                         raw_win->connectSend(std::bind(&con::ITcpServerClient::send, &c, std::placeholders::_1));

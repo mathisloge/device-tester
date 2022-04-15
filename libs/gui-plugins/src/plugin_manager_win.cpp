@@ -9,7 +9,6 @@ namespace dev::gui
 PluginManagerWin::PluginManagerWin()
     : Window{"Plugin Manager", ImGuiWindowFlags_MenuBar}
 {
-    plugin_.addPlugin("lua/plugins/test.lua");
 }
 
 PluginManagerWin::~PluginManagerWin()

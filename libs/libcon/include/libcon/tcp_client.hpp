@@ -25,7 +25,7 @@ class LIBCON_EXPORT TcpClient : public Connection
     void connect();
     void disconnect();
 
-    boost::signals2::connection connectOnReceive(const ReiceiveSignal::slot_type &sub) override;
+    sig::connection connectOnReceive(const RxSig::slot_type &sub) override;
     void send(std::span<uint8_t> data) override;
 
     std::string generateReadableName() const override;

@@ -4,7 +4,7 @@
 #include <string>
 #include "connection.hpp"
 #include "manager.hpp"
-
+#include "types.hpp"
 namespace dev::con
 {
 
@@ -31,6 +31,9 @@ class LIBCON_EXPORT CoapClient : public BaseConnection
     };
     using RequestId = uint32_t;
     static constexpr RequestId kRequestIdWellKnown = std::numeric_limits<RequestId>::max();
+    static constexpr RequestId kRequestIdUnknown = kRequestIdWellKnown - 1;
+
+    using RxSig = sig::signal<void(RequestId, std::span<const uint8_t>)>;
 
   public:
     CoapClient(Manager &manager);
@@ -40,14 +43,13 @@ class LIBCON_EXPORT CoapClient : public BaseConnection
     const Options &options() const;
 
     void getWellKnown(const std::string path = ".well-known/core");
-    void makeRequest(const Method method, const std::string &path, const RequestId id, const std::span<uint8_t> data = {});
+    void makeRequest(const Method method,
+                     const std::string &path,
+                     const RequestId id,
+                     const std::span<uint8_t> data = {});
+    sig::connection connectOnReceive(const RxSig::slot_type &sub);
 
     std::string generateReadableName() const override;
-
-    // void req_get();
-    // void req_put();
-    // void req_post();
-    // void req_delete();
 
   private:
     class Impl;
