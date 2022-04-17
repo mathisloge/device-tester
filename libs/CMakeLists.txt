@@ -1,4 +1,6 @@
 add_subdirectory(libcon)
+add_subdirectory(plugin_base)
+add_subdirectory(libplg)
 add_subdirectory(gui-common)
 add_subdirectory(gui-libcon)
 add_subdirectory(gui-plugins)

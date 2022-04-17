@@ -1,8 +1,8 @@
-#include "lua_plugin.hpp"
 #include <iostream>
+#include <libcon/coap_client.hpp>
+#include <libplglua/lua_plugin.hpp>
 #include <spdlog/spdlog.h>
-#include "pb.h"
-namespace dev::lua
+namespace dev::plg
 {
 LuaPlugin::LuaPlugin(const std::filesystem::path &plugin_file)
 {
@@ -40,4 +40,37 @@ const std::string &LuaPlugin::description() const
 {
     return description_;
 }
-} // namespace dev::lua
+
+std::vector<Plugin::ConnDescriptor> LuaPlugin::getConnections(con::Manager &manager) const
+{
+    std::vector<Plugin::ConnDescriptor> cons;
+    const sol::table wanted_cons = lua_["plugin"]["connection"];
+    for (const auto &key_value_pair : wanted_cons)
+    {
+        const sol::table decr_table = key_value_pair.second;
+        const auto type_str = decr_table["type"].get<std::string>();
+        const auto type = [](const std::string &type_str) -> ConnectionType {
+            if (type_str == "coap")
+                return ConnectionType::ct_coap_client;
+            return ConnectionType::ct_unknown;
+        }(type_str);
+        const auto name_str = decr_table["name"].get<std::string>();
+
+        std::shared_ptr<con::BaseConnection> connection{nullptr};
+        switch (type)
+        {
+        case ConnectionType::ct_coap_client: {
+            auto new_con = std::make_shared<con::CoapClient>(manager);
+            new_con->setReadableName(name_str);
+
+            connection = std::move(new_con);
+            break;
+        }
+        }
+
+        if (connection)
+            cons.emplace_back(Plugin::ConnDescriptor{type, std::move(connection)});
+    }
+    return cons;
+}
+} // namespace dev::plg

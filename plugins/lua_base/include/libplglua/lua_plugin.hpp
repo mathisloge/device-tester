@@ -1,10 +1,10 @@
 #pragma once
 #include <filesystem>
-#include <lua_base/lua_base.hpp>
+#include <plugin.hpp>
 #include <sol/sol.hpp>
-namespace dev::lua
+namespace dev::plg
 {
-class LuaPlugin final : public LuaPluginBase
+class LuaPlugin final : public Plugin
 {
   public:
     LuaPlugin(const std::filesystem::path &plugin_file);
@@ -12,6 +12,7 @@ class LuaPlugin final : public LuaPluginBase
 
     const std::string &name() const override;
     const std::string &description() const override;
+    std::vector<ConnDescriptor> getConnections(con::Manager& manager) const override;
 
   private:
     sol::state lua_;
@@ -19,4 +20,4 @@ class LuaPlugin final : public LuaPluginBase
     std::string name_;
     std::string description_;
 };
-} // namespace dev::lua
+} // namespace dev::plg

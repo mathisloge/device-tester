@@ -6,10 +6,10 @@
 namespace dev::gui
 {
 
-PluginManagerWin::PluginManagerWin()
+PluginManagerWin::PluginManagerWin(std::shared_ptr<dev::con::Manager> connection_manager)
     : Window{"Plugin Manager", ImGuiWindowFlags_MenuBar}
-{
-}
+    , connection_manager_{connection_manager}
+{}
 
 PluginManagerWin::~PluginManagerWin()
 {}
@@ -31,7 +31,7 @@ void PluginManagerWin::updateContent()
                     const std::filesystem::path plugin_path{outPath};
                     if (std::filesystem::is_regular_file(plugin_path) && plugin_path.extension() == ".lua")
                     {
-                        plugin_.addPlugin(plugin_path);
+                        const auto cons = manager_.loadLuaPlugin(plugin_path).getConnections(*connection_manager_);
                     }
                     free(outPath);
                 }

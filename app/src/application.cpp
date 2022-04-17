@@ -8,7 +8,7 @@ Application::Application()
     : run_render_loop_{false}
     , connection_manager_{std::make_shared<dev::con::Manager>()}
     , connection_manager_win_{win_manager_, connection_manager_}
-    , plugin_manager_win_{std::make_shared<dev::gui::PluginManagerWin>()}
+    , plugin_manager_win_{std::make_shared<dev::gui::PluginManagerWin>(connection_manager_)}
     , show_about_modal_{false}
 {
     win_manager_.registerWindow(plugin_manager_win_);

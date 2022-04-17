@@ -11,7 +11,7 @@ target_link_libraries(gui-plugins PUBLIC
     fmt::fmt 
     unofficial::nativefiledialog::nfd
     gui-common
-    lua-base
+    libplg
 )
 
 set_target_properties(gui-plugins PROPERTIES

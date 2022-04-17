@@ -2,19 +2,18 @@ find_package(Lua REQUIRED)
 find_package(sol2 CONFIG REQUIRED)
 
 
-add_library(lua-base 
-    src/lua_base.cpp
+add_library(lua-base STATIC
     src/lua_plugin.cpp
     
 )
 generate_export_header(lua-base EXPORT_FILE_NAME lua_base_export.hpp)
 target_include_directories(lua-base PRIVATE 
     "${LUA_INCLUDE_DIR}"
-    lua_protobuf
 )
 target_link_libraries(lua-base PRIVATE 
     sol2::sol2 
     spdlog::spdlog
+    plugin-base
     ${LUA_LIBRARIES}
 )
 
