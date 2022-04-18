@@ -46,5 +46,5 @@ install(TARGETS libcon)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libcon_export.hpp" TYPE INCLUDE)
 
 if(WIN32)
-    target_compile_definitions(libcon PRIVATE _WIN32_WINNT=0x0A00)
+    target_compile_definitions(libcon PUBLIC _WIN32_WINNT=0x0A00)
 endif()

@@ -44,6 +44,7 @@ class LIBCON_EXPORT Serial : public Connection
     const Options &options() const;
     void setOptions(const Options &opts);
 
+    bool isOpen() const;
     void open();
     void close();
 

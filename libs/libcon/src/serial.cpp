@@ -14,7 +14,12 @@ class Serial::Impl final : public BasicClient
         : BasicClient{manager.impl().ctx()}
         , serial_{strand_}
         , should_run_{false}
-    {}
+        , is_open_{false}
+    {
+        opts_.port = "COM3";
+        opts_.character_size = 8;
+        opts_.baud_rate = 115200;
+    }
 
     void open()
     {
@@ -67,18 +72,26 @@ class Serial::Impl final : public BasicClient
                 }
             }(opts_.flow_control)));
         should_run_ = true;
+        is_open_ = true;
         connection_str_ = fmt::format("serial://{}@{}", opts_.port, opts_.baud_rate);
         asio::post(strand_, std::bind(&Impl::doRead, this));
     }
 
     void close()
     {
+        should_run_ = false;
         asio::post(strand_, std::bind(&Impl::doClose, this));
+    }
+
+    bool isOpen() const
+    {
+        return serial_.is_open();
     }
 
   private:
     void doClose()
     {
+        is_open_ = false;
         asio::error_code ec;
         serial_.cancel(ec);
         serial_.close(ec);
@@ -141,6 +154,7 @@ class Serial::Impl final : public BasicClient
     std::string connection_str_;
 
     bool should_run_;
+    bool is_open_;
     std::array<uint8_t, 65535> buffer_rx_;
     std::mutex write_lock_;
     std::atomic_bool write_in_progress_;
@@ -177,6 +191,10 @@ sig::connection Serial::connectOnReceive(const RxSig::slot_type &sub)
     return impl_->connectOnReceive(sub);
 }
 
+bool Serial::isOpen() const
+{
+    return impl_->isOpen();
+}
 void Serial::open()
 {
     impl_->open();

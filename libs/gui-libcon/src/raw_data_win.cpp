@@ -51,11 +51,12 @@ void RawDataWin::updateContent()
         {
             for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
             {
-                const std::string text{fmt::format(FMT_COMPILE("[{},{:%H:%M:%S}]: {}"),
-                                                   data_[i].type == DataType::send ? "tx" : "rx",
-                                                   data_[i].ts,
-                                                   data_[i].data)};
-                ImGui::TextUnformatted(text.c_str());
+
+                const std::string text{fmt::format(
+                    FMT_COMPILE("[{},{:%H:%M:%S}]: "), data_[i].type == DataType::send ? "tx" : "rx", data_[i].ts)};
+                ImGui::TextColored(ImVec4{1.f, 96.f / 255.f, 0, 1.f}, text.c_str());
+                ImGui::SameLine();
+                ImGui::TextUnformatted(data_[i].data.c_str());
             }
         }
 

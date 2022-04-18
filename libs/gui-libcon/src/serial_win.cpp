@@ -23,7 +23,22 @@ const std::string &SerialWin::title() const
     return connection_->readableName();
 }
 void SerialWin::drawTabSettings()
-{}
+{
+    if (!connection_->isOpen())
+    {
+        if (ImGui::Button("Connect"))
+        {
+            connection_->open();
+        }
+    }
+    else
+    {
+        if (ImGui::Button("Disconnect"))
+        {
+            connection_->close();
+        }
+    }
+}
 void SerialWin::drawTabDetails()
 {
     bool has_raw_win = raw_win_ != nullptr;
