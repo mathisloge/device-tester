@@ -23,6 +23,24 @@ class Serial::Impl final : public BasicClient
 
     void open()
     {
+        asio::post(strand_, std::bind(&Impl::doOpen, this));
+    }
+
+    void close()
+    {
+        should_run_ = false;
+        asio::post(strand_, std::bind(&Impl::doClose, this));
+    }
+
+    bool isOpen() const
+    {
+        return serial_.is_open();
+    }
+
+  private:
+    void doOpen()
+    {
+        doClose();
         serial_.open(opts_.port);
         serial_.set_option(asio::serial_port_base::baud_rate(opts_.baud_rate));
         serial_.set_option(asio::serial_port_base::character_size(opts_.character_size));
@@ -74,27 +92,19 @@ class Serial::Impl final : public BasicClient
         should_run_ = true;
         is_open_ = true;
         connection_str_ = fmt::format("serial://{}@{}", opts_.port, opts_.baud_rate);
+
         asio::post(strand_, std::bind(&Impl::doRead, this));
     }
-
-    void close()
-    {
-        should_run_ = false;
-        asio::post(strand_, std::bind(&Impl::doClose, this));
-    }
-
-    bool isOpen() const
-    {
-        return serial_.is_open();
-    }
-
-  private:
     void doClose()
     {
         is_open_ = false;
-        asio::error_code ec;
-        serial_.cancel(ec);
-        serial_.close(ec);
+        should_run_ = false;
+        if (serial_.is_open())
+        {
+            asio::error_code ec;
+            serial_.cancel(ec);
+            serial_.close(ec);
+        }
     }
     void doWrite() override
     {

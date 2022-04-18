@@ -117,9 +117,13 @@ void LuaPlugin::setupConnections(con::Manager &manager)
         {
             auto conn = std::make_shared<con::Serial>(manager);
             conn->setReadableName(name_str);
-            con::Serial::Options opts;
+            con::Serial::Options opts{};
             opts.port = decr_table["port"].get<std::string>();
             opts.baud_rate = decr_table["baudrate"].get<uint32_t>();
+            opts.character_size = 8;
+            opts.flow_control = con::Serial::FlowControl::none;
+            opts.parity = con::Serial::Parity::none;
+            opts.stop_bits = con::Serial::StopBits::one;
             conn->setOptions(opts);
 
             lua_[var_name] = std::make_unique<ConnectionWrapper>(manager.ctx(), conn, decr_table["onReceive"]);
