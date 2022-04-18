@@ -57,7 +57,7 @@ struct CoapClientConnectionWrapper : public BaseConnectionWrapper
     {
         client->makeRequest(con::CoapClient::Method::m_put, path, id, data);
     }
-
+    //! todo: this is stupid... the strand has to be in the lua plugin instance to guard multithreaded execution of the sol::state.
     asio::strand<asio::any_io_executor> strand;
     std::shared_ptr<con::CoapClient> client;
     sol::function callback_fnc;
