@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <SDL.h>
 #include <libcon/manager.hpp>
 #include <gui-common/window_manager.hpp>
 #include <gui-libcon/connection_manager_win.hpp>
@@ -21,6 +22,9 @@ class Application
   private:
     void menuBar();
     void aboutModal();
+
+  protected:
+    static void TryEnableDarkMode(SDL_Window *win);
 
   private:
     bool run_render_loop_;

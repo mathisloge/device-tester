@@ -1,8 +1,14 @@
 #include "application.hpp"
 #include <exception>
+#include <SDL_syswm.h>
 #include <fmt/format.h>
 #include <imgui.h>
 #include "version.hpp"
+
+#ifdef _WIN32
+#include <dwmapi.h>
+#include <windows.h>
+#endif
 
 Application::Application()
     : run_render_loop_{false}
@@ -123,4 +129,19 @@ bool Application::shouldRun() const
 std::string Application::getTitle()
 {
     return fmt::format("DuT-App {} - {}", dev::kVersion, dev::kGitRef);
+}
+
+void Application::TryEnableDarkMode(SDL_Window *win)
+{
+#ifdef _WIN32
+    // dark title bar :)
+    SDL_SysWMinfo wmInfo;
+    SDL_VERSION(&wmInfo.version);
+    SDL_GetWindowWMInfo(win, &wmInfo);
+    HWND hwnd = wmInfo.info.win.window;
+
+    BOOL USE_DARK_MODE = true;
+    BOOL SET_IMMERSIVE_DARK_MODE_SUCCESS = SUCCEEDED(DwmSetWindowAttribute(
+        hwnd, DWMWINDOWATTRIBUTE::DWMWA_USE_IMMERSIVE_DARK_MODE, &USE_DARK_MODE, sizeof(USE_DARK_MODE)));
+#endif
 }
