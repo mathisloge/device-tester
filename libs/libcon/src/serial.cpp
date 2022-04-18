@@ -1,5 +1,6 @@
 #include "libcon/serial.hpp"
 #include <fmt/format.h>
+#include <spdlog/spdlog.h>
 #include "basic_client.hpp"
 #include "manager_impl.hpp"
 
@@ -12,9 +13,10 @@ class Serial::Impl final : public BasicClient
     Impl(Manager &manager)
         : BasicClient{manager.impl().ctx()}
         , serial_{strand_}
+        , should_run_{false}
     {}
 
-    void connectPort()
+    void open()
     {
         serial_.open(opts_.port);
         serial_.set_option(asio::serial_port_base::baud_rate(opts_.baud_rate));
@@ -30,6 +32,8 @@ class Serial::Impl final : public BasicClient
                     return PT::even;
                 case Parity::even:
                     return PT::even;
+                default:
+                    return PT::none;
                 }
             }(opts_.parity)));
         serial_.set_option(
@@ -43,6 +47,8 @@ class Serial::Impl final : public BasicClient
                     return PT::onepointfive;
                 case StopBits::two:
                     return PT::two;
+                default:
+                    return PT::one;
                 }
             }(opts_.stop_bits)));
         serial_.set_option(asio::serial_port_base::flow_control(
@@ -56,20 +62,88 @@ class Serial::Impl final : public BasicClient
                     return PT::software;
                 case FlowControl::hardware:
                     return PT::hardware;
+                default:
+                    return PT::none;
                 }
             }(opts_.flow_control)));
-
+        should_run_ = true;
         connection_str_ = fmt::format("serial://{}@{}", opts_.port, opts_.baud_rate);
+        asio::post(strand_, std::bind(&Impl::doRead, this));
+    }
+
+    void close()
+    {
+        asio::post(strand_, std::bind(&Impl::doClose, this));
     }
 
   private:
+    void doClose()
+    {
+        asio::error_code ec;
+        serial_.cancel(ec);
+        serial_.close(ec);
+    }
     void doWrite() override
-    {}
+    {
+        if (!should_run_)
+            return;
+        asio::post(strand_, std::bind(&Impl::startWrite, this));
+    }
+
+    void startWrite()
+    {
+        if (write_in_progress_)
+            return;
+        std::unique_lock<std::mutex> l{write_lock_};
+        if (tx_current_.size() == 0 && tx_queue_.is_not_empty())
+            tx_current_ = tx_queue_.pop_back();
+        else
+            return;
+        write_in_progress_ = true;
+        serial_.async_write_some(asio::buffer(tx_current_), [this](asio::error_code ec, std::size_t written) {
+            if (!ec)
+            {
+                if (tx_current_.size() > written)
+                    tx_current_.erase(tx_current_.begin(), tx_current_.begin() + written);
+                else if (tx_queue_.is_not_empty())
+                    tx_current_ = std::forward<std::vector<uint8_t>>(tx_queue_.pop_back());
+                else
+                    tx_current_.clear();
+                write_in_progress_ = false;
+                asio::post(strand_, std::bind(&Impl::startWrite, this));
+            }
+        });
+    }
+
+    void doRead()
+    {
+        serial_.async_read_some(asio::buffer(buffer_rx_),
+                                std::bind(&Impl::handleRead, this, std::placeholders::_1, std::placeholders::_2));
+    }
+    void handleRead(const asio::error_code &error, std::size_t n)
+    {
+        if (!error)
+        {
+            onReceive(std::span<uint8_t>(buffer_rx_.begin(), buffer_rx_.begin() + n));
+            if (should_run_)
+                asio::post(strand_, std::bind(&Impl::doRead, this));
+        }
+        else
+        {
+            SPDLOG_ERROR("Error while receiving {}", error.message());
+            doClose();
+        }
+    }
 
   public:
     Options opts_;
     asio::serial_port serial_;
     std::string connection_str_;
+
+    bool should_run_;
+    std::array<uint8_t, 65535> buffer_rx_;
+    std::mutex write_lock_;
+    std::atomic_bool write_in_progress_;
 };
 
 Serial::Serial(Manager &manager)
@@ -101,6 +175,15 @@ std::string Serial::generateReadableName() const
 sig::connection Serial::connectOnReceive(const RxSig::slot_type &sub)
 {
     return impl_->connectOnReceive(sub);
+}
+
+void Serial::open()
+{
+    impl_->open();
+}
+void Serial::close()
+{
+    impl_->close();
 }
 
 } // namespace dev::con

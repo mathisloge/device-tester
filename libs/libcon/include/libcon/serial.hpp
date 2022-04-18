@@ -44,6 +44,9 @@ class LIBCON_EXPORT Serial : public Connection
     const Options &options() const;
     void setOptions(const Options &opts);
 
+    void open();
+    void close();
+
     void send(std::span<uint8_t> data) override;
     sig::connection connectOnReceive(const RxSig::slot_type &sub) override;
     std::string generateReadableName() const override;
