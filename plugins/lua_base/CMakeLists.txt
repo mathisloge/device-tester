@@ -14,6 +14,7 @@ target_link_libraries(lua-base PRIVATE
     sol2::sol2 
     spdlog::spdlog
     plugin-base
+    imgui::imgui
     ${LUA_LIBRARIES}
 )
 

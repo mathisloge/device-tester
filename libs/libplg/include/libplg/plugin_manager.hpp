@@ -10,10 +10,11 @@ namespace dev::plg
 class LIBPLG_EXPORT PluginManager final
 {
   public:
-    PluginManager(con::Manager& manager);
+    PluginManager(con::Manager &manager);
     ~PluginManager();
 
     Plugin &loadLuaPlugin(const std::filesystem::path &path_to_plugin_file);
+    const std::vector<std::shared_ptr<Plugin>> &plugins() const;
 
   private:
     class Impl;

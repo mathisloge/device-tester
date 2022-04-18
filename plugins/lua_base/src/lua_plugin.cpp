@@ -1,4 +1,5 @@
 #include <iostream>
+#include <imgui.h>
 #include <libcon/coap_client.hpp>
 #include <libplglua/lua_plugin.hpp>
 #include <spdlog/spdlog.h>
@@ -52,9 +53,31 @@ struct CoapClientConnectionWrapper : public BaseConnectionWrapper
         }
     }
 
+    void put(const con::CoapClient::RequestId id, const std::string path, std::vector<uint8_t> data)
+    {
+        client->makeRequest(con::CoapClient::Method::m_put, path, id, data);
+    }
+
     asio::strand<asio::any_io_executor> strand;
     std::shared_ptr<con::CoapClient> client;
     sol::function callback_fnc;
+};
+
+class LuaActionItem : public ActionItem
+{
+  public:
+    LuaActionItem(sol::function draw_fnc)
+        : draw_fnc_{draw_fnc}
+    {}
+    ~LuaActionItem()
+    {}
+    void drawGui() override
+    {
+        draw_fnc_();
+    }
+
+  private:
+    sol::function draw_fnc_;
 };
 
 LuaPlugin::LuaPlugin(con::Manager &manager, const std::filesystem::path &plugin_file)
@@ -70,8 +93,21 @@ LuaPlugin::LuaPlugin(con::Manager &manager, const std::filesystem::path &plugin_
     lua_["package"]["path"] =
         package_path + ";" + std::filesystem::path{"./lua/modules/"}.make_preferred().string() + "?.lua";
 
-    auto coap_client_type = lua_.new_usertype<CoapClientConnectionWrapper>("coap_client");
+    // clang-format off
+    auto coap_client_type =
+        lua_.new_usertype<CoapClientConnectionWrapper>("coap_client", 
+            "put", &CoapClientConnectionWrapper::put
+        );
+    // clang-format on
     auto connection_type = lua_.new_usertype<ConnectionWrapper>("connection");
+
+    auto imgui_tbl = lua_["imgui"].get_or_create<sol::table>();
+    imgui_tbl.set_function("colorEdit3", [](const char *label, std::array<float, 3> vals) {
+        ImGui::ColorEdit3(label, &vals[0]);
+        return vals;
+    });
+    imgui_tbl.set_function("text", [](const char *text) { ImGui::Text("%s", text); });
+    imgui_tbl.set_function("button", [](const char *label) { return ImGui::Button(label); });
 
     auto res = lua_.script_file(plugin_file.generic_string());
     if (!res.valid())
@@ -84,6 +120,7 @@ LuaPlugin::LuaPlugin(con::Manager &manager, const std::filesystem::path &plugin_
     name_ = plugin.get<std::string>("name");
     description_ = plugin.get<std::string>("description");
     setupConnections(manager);
+    setupActions();
 
     lua_["setup"]();
 }
@@ -133,6 +170,17 @@ void LuaPlugin::setupConnections(con::Manager &manager)
     }
 }
 
+void LuaPlugin::setupActions()
+{
+    const sol::table wanted_actions = lua_["plugin"]["actions"];
+    for (const auto &key_value_pair : wanted_actions)
+    {
+        const sol::table action_tbl = key_value_pair.second;
+
+        actions_.emplace_back(std::make_unique<LuaActionItem>(action_tbl["gui"].get<sol::function>()));
+    }
+}
+
 const std::string &LuaPlugin::name() const
 {
     return name_;
@@ -145,5 +193,9 @@ const std::string &LuaPlugin::description() const
 const std::vector<Plugin::ConnDescriptor> &LuaPlugin::getConnections() const
 {
     return connections_;
+}
+const std::vector<std::unique_ptr<ActionItem>> &LuaPlugin::getActionItems() const
+{
+    return actions_;
 }
 } // namespace dev::plg

@@ -1,5 +1,6 @@
 add_library(libplg 
     src/plugin_manager.cpp
+    src/init.cpp
 )
 target_link_libraries(libplg 
     PUBLIC

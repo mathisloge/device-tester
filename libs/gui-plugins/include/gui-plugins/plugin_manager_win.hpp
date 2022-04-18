@@ -18,5 +18,6 @@ class PluginManagerWin final : public Window
     plg::PluginManager manager_;
     std::shared_ptr<con::Manager> connection_manager_;
     ConnectionManagerWin &connection_manager_win_;
+    std::shared_ptr<plg::Plugin> current_;
 };
 } // namespace dev::gui

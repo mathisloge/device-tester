@@ -8,6 +8,14 @@
 #include <libcon/udp_connection.hpp>
 namespace dev::plg
 {
+class ActionItem
+{
+  public:
+    ActionItem() = default;
+    ~ActionItem() = default;
+
+    virtual void drawGui() = 0;
+};
 class Plugin
 {
   public:
@@ -22,5 +30,7 @@ class Plugin
                                         std::shared_ptr<con::TcpServer>,
                                         std::shared_ptr<con::UdpConnection>>;
     virtual const std::vector<ConnDescriptor> &getConnections() const = 0;
+    virtual const std::vector<std::unique_ptr<ActionItem>> &getActionItems() const = 0;
 };
+
 } // namespace dev::plg

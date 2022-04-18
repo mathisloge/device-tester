@@ -3,6 +3,7 @@
 #include <SDL_syswm.h>
 #include <fmt/format.h>
 #include <imgui.h>
+#include <libplg/init.hpp>
 #include "version.hpp"
 
 #ifdef _WIN32
@@ -16,8 +17,7 @@ Application::Application()
     , connection_manager_win_{win_manager_, connection_manager_}
     , plugin_manager_win_{connection_manager_, connection_manager_win_}
     , show_about_modal_{false}
-{
-}
+{}
 
 Application::~Application()
 {}
@@ -32,6 +32,7 @@ void Application::run()
     {
         return;
     }
+    dev::plg::SetImGuiContext(ImGui::GetCurrentContext());
     run_render_loop_ = true;
     renderLoop();
 }
