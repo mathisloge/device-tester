@@ -23,10 +23,10 @@ add_library(libcon
 target_link_libraries(libcon 
     PRIVATE 
         libcoap::coap-3
-        asio::asio
         Boost::headers
     PUBLIC
         fmt::fmt
+        asio::asio
 )
 generate_export_header(libcon EXPORT_FILE_NAME libcon_export.hpp)
 target_include_directories(libcon PUBLIC

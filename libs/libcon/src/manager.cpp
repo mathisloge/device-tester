@@ -15,4 +15,8 @@ ManagerImpl &Manager::impl()
 {
     return *impl_;
 }
+asio::io_context &Manager::ctx()
+{
+    return impl_->ctx();
+}
 } // namespace dev::con
