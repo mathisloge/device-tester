@@ -31,7 +31,7 @@ void Fonts::loadFont(FontType type)
     }
     case FontType::roboto_mono:
         roboto_mono =
-            io.Fonts->AddFontFromFileTTF((base_path / "RobotoMono-Regular.ttf").generic_string().c_str(), 16.0f);
+            io.Fonts->AddFontFromFileTTF((base_path / "RobotoMono-Regular.ttf").generic_string().c_str(), 18.0f);
         break;
     }
 }

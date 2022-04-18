@@ -165,7 +165,7 @@ class Serial::Impl final : public BasicClient
 
     bool should_run_;
     bool is_open_;
-    std::array<uint8_t, 65535> buffer_rx_;
+    std::array<uint8_t, 1024> buffer_rx_;
     std::mutex write_lock_;
     std::atomic_bool write_in_progress_;
 };
