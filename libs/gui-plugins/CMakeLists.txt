@@ -11,6 +11,7 @@ target_link_libraries(gui-plugins PUBLIC
     fmt::fmt 
     unofficial::nativefiledialog::nfd
     gui-common
+    gui-libcon
     libplg
 )
 

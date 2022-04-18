@@ -12,6 +12,8 @@ add_library(gui-libcon STATIC
     src/udp_con_win.hpp
     src/coap_client_win.cpp
     src/coap_client_win.hpp
+    src/serial_win.cpp
+    src/serial_win.hpp
 )
 target_include_directories(gui-libcon PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

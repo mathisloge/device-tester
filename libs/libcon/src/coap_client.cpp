@@ -245,6 +245,8 @@ class CoapClient::Impl final
                 // if ((len + offset == total) && add_nl)
                 //     append_to_output((const uint8_t *)"\n", 1);
             }
+            else
+                rx_signal_(req_id, {});
 
             /* Check if Block2 option is set */
             block_opt = coap_check_option(received, COAP_OPTION_BLOCK2, &opt_iter);

@@ -2,6 +2,7 @@
 #include <fmt/format.h>
 #include <imgui.h>
 #include "coap_client_win.hpp"
+#include "serial_win.hpp"
 #include "tcp_client_win.hpp"
 #include "tcp_server_win.hpp"
 #include "udp_con_win.hpp"
@@ -17,12 +18,31 @@ ConnectionManagerWin::ConnectionManagerWin(WindowManager &win_manager, const std
 ConnectionManagerWin::~ConnectionManagerWin()
 {}
 
+void ConnectionManagerWin::registerConnection(const std::shared_ptr<con::CoapClient> &con)
+{
+    connections_.emplace(std::make_shared<CoapClientWin>(con, win_manager_));
+}
+void ConnectionManagerWin::registerConnection(const std::shared_ptr<con::Serial> &con)
+{
+    connections_.emplace(std::make_shared<SerialWin>(con, win_manager_));
+}
+void ConnectionManagerWin::registerConnection(const std::shared_ptr<con::TcpClient> &con)
+{}
+void ConnectionManagerWin::registerConnection(const std::shared_ptr<con::TcpServer> &con)
+{}
+void ConnectionManagerWin::registerConnection(const std::shared_ptr<con::UdpConnection> &con)
+{}
+
 void ConnectionManagerWin::updateContent()
 {
     if (ImGui::BeginMenuBar())
     {
         if (ImGui::BeginMenu("Connection"))
         {
+            if (ImGui::MenuItem("Serial"))
+            {
+                current_ = *connections_.emplace(std::make_shared<SerialWin>(*manager_, win_manager_)).first;
+            }
             if (ImGui::MenuItem("TCP"))
             {
                 current_ = *connections_.emplace(std::make_shared<TcpClientWin>(*manager_, win_manager_)).first;

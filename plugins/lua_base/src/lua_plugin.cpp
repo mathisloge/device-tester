@@ -7,7 +7,29 @@ namespace dev::plg
 struct BaseConnectionWrapper
 {};
 struct ConnectionWrapper : public BaseConnectionWrapper
-{};
+{
+    ConnectionWrapper(asio::io_context &io, const std::shared_ptr<con::Connection> &client, sol::function cb)
+        : strand{asio::make_strand(io)}
+        , client{client}
+        , callback_fnc{cb}
+    {
+        client->connectOnReceive(std::bind(&ConnectionWrapper::onReceive, this, std::placeholders::_1));
+    }
+
+    void onReceive(std::span<const uint8_t> data)
+    {
+        if (callback_fnc)
+        {
+            std::shared_ptr<std::vector<uint8_t>> data_mem = std::make_shared<std::vector<uint8_t>>();
+            data_mem->assign(data.begin(), data.end());
+            asio::post(strand, [this, data_mem]() { callback_fnc(*data_mem); });
+        }
+    }
+
+    asio::strand<asio::any_io_executor> strand;
+    std::shared_ptr<con::Connection> client;
+    sol::function callback_fnc;
+};
 
 struct CoapClientConnectionWrapper : public BaseConnectionWrapper
 {
@@ -15,7 +37,10 @@ struct CoapClientConnectionWrapper : public BaseConnectionWrapper
         : strand{asio::make_strand(io)}
         , client{client}
         , callback_fnc{cb}
-    {}
+    {
+        client->connectOnReceive(
+            std::bind(&CoapClientConnectionWrapper::onReceive, this, std::placeholders::_1, std::placeholders::_2));
+    }
 
     void onReceive(con::CoapClient::RequestId id, std::span<const uint8_t> data)
     {
@@ -46,6 +71,7 @@ LuaPlugin::LuaPlugin(con::Manager &manager, const std::filesystem::path &plugin_
         package_path + ";" + std::filesystem::path{"./lua/modules/"}.make_preferred().string() + "?.lua";
 
     auto coap_client_type = lua_.new_usertype<CoapClientConnectionWrapper>("coap_client");
+    auto connection_type = lua_.new_usertype<ConnectionWrapper>("connection");
 
     auto res = lua_.script_file(plugin_file.generic_string());
     if (!res.valid())
@@ -57,8 +83,6 @@ LuaPlugin::LuaPlugin(con::Manager &manager, const std::filesystem::path &plugin_
     sol::table plugin = lua_["plugin"];
     name_ = plugin.get<std::string>("name");
     description_ = plugin.get<std::string>("description");
-    spdlog::info("Plugin: {}", name_);
-    spdlog::info("Description: {}", description_);
     setupConnections(manager);
 
     lua_["setup"]();
@@ -87,7 +111,7 @@ void LuaPlugin::setupConnections(con::Manager &manager)
 
             lua_[var_name] =
                 std::make_unique<CoapClientConnectionWrapper>(manager.ctx(), client, decr_table["onReceive"]);
-            connections_.emplace_back(client);
+            connections_.emplace_back(std::move(client));
         }
         else if (type_str == "serial")
         {
@@ -97,6 +121,9 @@ void LuaPlugin::setupConnections(con::Manager &manager)
             opts.port = decr_table["port"].get<std::string>();
             opts.baud_rate = decr_table["baudrate"].get<uint32_t>();
             conn->setOptions(opts);
+
+            lua_[var_name] = std::make_unique<ConnectionWrapper>(manager.ctx(), conn, decr_table["onReceive"]);
+
             connections_.emplace_back(std::move(conn));
         }
     }

@@ -1,5 +1,7 @@
-function onCoapReceive(id, array)
-    print("Received " + id)
+function onCoapReceive(id, data)
+    print("Received ")
+    print("ID: ", id)
+    print("SIZE: ", data:size())
 end
 plugin = {
     name = "Test Connection Setup",
@@ -11,9 +13,9 @@ plugin = {
             ip = "fe80::7ae3:6dff:fe09:8188",
             port = 5683,
             onReceive = onCoapReceive
-        }, 
+        },
         serialdebug = {
-            name = "LED Debug", 
+            name = "LED Debug",
             type = "serial",
             port = "COM3",
             baudrate = 115200
@@ -23,12 +25,10 @@ plugin = {
 
 function coap_client:printme()
     print(self)
-	print("yes!")
+    print("yes!")
 end
 
 function setup()
     print("setup")
-    ledclient:printme()
-    --ledclient:onReceive(onCoapReceive)
     ledclient:printme()
 end

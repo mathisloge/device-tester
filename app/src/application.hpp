@@ -31,7 +31,7 @@ class Application
     dev::gui::WindowManager win_manager_;
     std::shared_ptr<dev::con::Manager> connection_manager_;
     dev::gui::ConnectionManagerWin connection_manager_win_;
-    std::shared_ptr<dev::gui::PluginManagerWin> plugin_manager_win_;
+    dev::gui::PluginManagerWin plugin_manager_win_;
 
     bool show_about_modal_;
 

@@ -11,6 +11,12 @@ CoapClientWin::CoapClientWin(con::Manager &manager, WindowManager &win_manager)
     , raw_win_{nullptr}
 
 {}
+CoapClientWin::CoapClientWin(const std::shared_ptr<con::CoapClient> &client, WindowManager &win_manager)
+    : win_manager_{win_manager}
+    , client_{client}
+    , opts_{client_->options()}
+    , raw_win_{nullptr}
+{}
 CoapClientWin::~CoapClientWin()
 {}
 
@@ -46,7 +52,8 @@ void CoapClientWin::drawTabDetails()
     {
         client_->getWellKnown();
     }
-    if(ImGui::Button("TEST")) {
+    if (ImGui::Button("TEST"))
+    {
         client_->makeRequest(con::CoapClient::Method::m_put, "test", 0);
     }
 }
