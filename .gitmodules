@@ -4,3 +4,6 @@
 [submodule "libs/imgui_club"]
 	path = libs/imgui_club
 	url = https://github.com/ocornut/imgui_club.git
+[submodule "docs/deps/c4_plantuml"]
+	path = docs/deps/c4_plantuml
+	url = https://github.com/plantuml-stdlib/C4-PlantUML

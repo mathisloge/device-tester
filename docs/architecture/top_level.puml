@@ -1,0 +1,16 @@
+@startuml C4_Elements
+!include ../deps/c4_plantuml/C4_Container.puml
+LAYOUT_WITH_LEGEND()
+LAYOUT_AS_SKETCH()
+
+title General System Layout
+
+Person(developer, Developer, "A developer testing a device")
+
+System_Boundary(app, "App") {
+  
+}
+
+System_Ext(dut, "Device under test", "The Device which is undergoing development or testing")
+
+@enduml
