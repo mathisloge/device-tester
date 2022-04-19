@@ -18,20 +18,22 @@ function sendLedColor(rgb_color)
         b = math.floor(rgb_color[3] * 255)
     }
     local bytes = pb.encode("LedCtrlSetColor", data)
-    print(pb.tohex(bytes))
+    -- print(pb.tohex(bytes))
     ledclient:put(1, "test", bytes)
 end
 
 function onCoapReceive(id, data)
-    print("Received ")
-    print("ID: ", id)
-    print("SIZE: ", data:size())
+    -- print("Received ", id)
 end
 
 local colors = {0.0, 0.1, 0.2}
 function draw_set_color()
     imgui.text("Select the color the leds should have:")
-    colors = imgui.colorEdit3("Color", colors)
+    local changed = false
+    changed, colors = imgui.colorPicker3("Color", colors)
+    if changed then 
+        sendLedColor(colors)
+    end
 
     if imgui.button("Set") then
         print("SEND")

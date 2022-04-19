@@ -61,11 +61,9 @@ struct CoapClientConnectionWrapper : public BaseConnectionWrapper
 
     void put(const int id, const std::string path, sol::object data)
     {
-        spdlog::info("Send put request {}", static_cast<int>(data.get_type()));
         if (data.is<std::string>())
         {
             const auto d = data.as<std::string>();
-            spdlog::info("SIZUE {}", d.size());
             asio::post(guard.strand, [this, id, path, d]() {
                 client->makeRequest(con::CoapClient::Method::m_put,
                                     path,
@@ -122,9 +120,14 @@ LuaPlugin::LuaPlugin(con::Manager &manager, const std::filesystem::path &plugin_
     auto connection_type = lua_.new_usertype<ConnectionWrapper>("connection");
 
     auto imgui_tbl = lua_["imgui"].get_or_create<sol::table>();
+    imgui_tbl.set_function("colorPicker3", [](const char *label, std::array<float, 3> vals) {
+        const bool changed = ImGui::ColorPicker3(label, &vals[0]);
+        return std::tuple<bool, std::array<float, 3>>{changed, vals};
+        // return vals;
+    });
     imgui_tbl.set_function("colorEdit3", [](const char *label, std::array<float, 3> vals) {
-        ImGui::ColorEdit3(label, &vals[0]);
-        return vals;
+        const bool changed = ImGui::ColorEdit3(label, &vals[0]);
+        return std::tuple<bool, std::array<float, 3>>{changed, vals};
     });
     imgui_tbl.set_function("text", [](const char *text) { ImGui::Text("%s", text); });
     imgui_tbl.set_function("button", [](const char *label) { return ImGui::Button(label); });
