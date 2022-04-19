@@ -4,6 +4,7 @@ find_package(sol2 CONFIG REQUIRED)
 
 add_library(lua-base STATIC
     src/lua_plugin.cpp
+    src/lua_gui_bindings.cpp
     
 )
 generate_export_header(lua-base EXPORT_FILE_NAME lua_base_export.hpp)
@@ -15,6 +16,7 @@ target_link_libraries(lua-base PRIVATE
     spdlog::spdlog
     plugin-base
     imgui::imgui
+    implot::implot
     ${LUA_LIBRARIES}
 )
 

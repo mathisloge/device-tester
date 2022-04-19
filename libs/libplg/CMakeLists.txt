@@ -5,6 +5,8 @@ add_library(libplg
 target_link_libraries(libplg 
     PUBLIC
         plugin-base
+        imgui::imgui
+        implot::implot
     PRIVATE 
         lua-base
 )

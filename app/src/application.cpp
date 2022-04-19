@@ -3,6 +3,7 @@
 #include <SDL_syswm.h>
 #include <fmt/format.h>
 #include <imgui.h>
+#include <implot.h>
 #include <libplg/init.hpp>
 #include "version.hpp"
 
@@ -27,12 +28,13 @@ void Application::run()
     try
     {
         setup();
+        ImPlot::CreateContext();
     }
     catch (std::exception ex)
     {
         return;
     }
-    dev::plg::SetImGuiContext(ImGui::GetCurrentContext());
+    dev::plg::SetImGuiContext(ImGui::GetCurrentContext(), ImPlot::GetCurrentContext());
     run_render_loop_ = true;
     renderLoop();
 }

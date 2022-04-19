@@ -27,17 +27,30 @@ function onCoapReceive(id, data)
 end
 
 local colors = {0.0, 0.1, 0.2}
+local counter = 1.0
+
+local testdata = implot.ScrollingBuffer.new(1000)
 function draw_set_color()
+    testdata:addPoint(counter, math.sin(counter / 100.0))
+    counter = counter + 1
+
     imgui.text("Select the color the leds should have:")
     local changed = false
     changed, colors = imgui.colorPicker3("Color", colors)
-    if changed then 
+    if changed then
         sendLedColor(colors)
     end
 
     if imgui.button("Set") then
         print("SEND")
         sendLedColor(colors)
+    end
+
+    if implot.beginPlot("TEST") then
+        implot.setupAxisLimits(0, counter - 1000, counter, 1)
+        implot.setupAxisLimits(3, -1, 1, 0)
+        testdata:plotLine("MYLINE")
+        implot.endPlot()
     end
 end
 

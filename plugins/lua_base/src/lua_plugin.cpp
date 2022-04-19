@@ -4,6 +4,7 @@
 #include <libcon/coap_client.hpp>
 #include <libplglua/lua_plugin.hpp>
 #include <spdlog/spdlog.h>
+#include "lua_gui_bindings.hpp"
 namespace dev::plg
 {
 struct BaseConnectionWrapper
@@ -111,26 +112,13 @@ LuaPlugin::LuaPlugin(con::Manager &manager, const std::filesystem::path &plugin_
     lua_["package"]["path"] =
         package_path + ";" + std::filesystem::path{"./lua/modules/"}.make_preferred().string() + "?.lua";
 
-    // clang-format off
-    auto coap_client_type =
-        lua_.new_usertype<CoapClientConnectionWrapper>("coap_client");
+    auto coap_client_type = lua_.new_usertype<CoapClientConnectionWrapper>("coap_client");
     coap_client_type["put"] = &CoapClientConnectionWrapper::put;
 
-    // clang-format on
     auto connection_type = lua_.new_usertype<ConnectionWrapper>("connection");
 
-    auto imgui_tbl = lua_["imgui"].get_or_create<sol::table>();
-    imgui_tbl.set_function("colorPicker3", [](const char *label, std::array<float, 3> vals) {
-        const bool changed = ImGui::ColorPicker3(label, &vals[0]);
-        return std::tuple<bool, std::array<float, 3>>{changed, vals};
-        // return vals;
-    });
-    imgui_tbl.set_function("colorEdit3", [](const char *label, std::array<float, 3> vals) {
-        const bool changed = ImGui::ColorEdit3(label, &vals[0]);
-        return std::tuple<bool, std::array<float, 3>>{changed, vals};
-    });
-    imgui_tbl.set_function("text", [](const char *text) { ImGui::Text("%s", text); });
-    imgui_tbl.set_function("button", [](const char *label) { return ImGui::Button(label); });
+    registerImGuiFunctions(lua_["imgui"].get_or_create<sol::table>());
+    registerImPlotFunctions(lua_["implot"].get_or_create<sol::table>());
 
     auto res = lua_.script_file(plugin_file.generic_string());
     if (!res.valid())

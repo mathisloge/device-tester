@@ -22,6 +22,7 @@ target_link_libraries(device-tester PRIVATE
     SDL2::SDL2 
     SDL2::SDL2main
     imgui::imgui
+    implot::implot
     gui-common
     gui-libcon
     gui-plugins
