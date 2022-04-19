@@ -79,7 +79,7 @@ class CoapClient::Impl final
     void sendRequest(const std::string_view path,
                      const Method method,
                      const RequestId id,
-                     const std::span<uint8_t> data)
+                     const std::span<const uint8_t> data)
     {
         coap_optlist_t *optlist = nullptr;
         {
@@ -116,7 +116,6 @@ class CoapClient::Impl final
 
         std::shared_lock<std::shared_mutex> l{coap_mtx_};
         coap_pdu_t *pdu = coap_new_pdu(COAP_MESSAGE_CON, req_code, session_.get());
-
         uint8_t token[8];
         size_t tokenlen;
         coap_session_new_token(session_.get(), &tokenlen, token);
@@ -125,13 +124,15 @@ class CoapClient::Impl final
         {
             spdlog::error("cannot add token to request");
         }
+        
+        coap_add_optlist_pdu(pdu, &optlist);
         if (data.size() > 0)
         {
             std::vector<uint8_t> tmp_mem;
             tmp_mem.assign(data.begin(), data.end());
 
             {
-                std::unique_lock l{large_data_.mtx};
+                std::unique_lock<std::mutex> l{large_data_mtx_};
                 auto it = large_data_.buffer.emplace(large_data_.id_counter++, std::move(tmp_mem));
 
                 /* Let the underlying libcoap decide how this data should be sent */
@@ -145,10 +146,10 @@ class CoapClient::Impl final
             }
         }
 
-        coap_add_optlist_pdu(pdu, &optlist);
-
         coap_show_pdu(LOG_INFO, pdu);
         coap_send(session_.get(), pdu);
+
+        coap_delete_optlist(optlist);
     }
 
   private:
@@ -358,10 +359,11 @@ class CoapClient::Impl final
 
     void freeLargeData(const size_t id)
     {
-        std::unique_lock l{large_data_.mtx};
-        auto it = large_data_.buffer.find(id);
-        if (it != large_data_.buffer.end())
-            large_data_.buffer.erase(it);
+        large_data_.buffer.erase(id);
+        // std::unique_lock<std::mutex> l{large_data_mtx_};
+        // auto it = large_data_.buffer.find(id);
+        // if (it != large_data_.buffer.end())
+        //     large_data_.buffer.erase(it);
     }
 
   private:
@@ -370,9 +372,9 @@ class CoapClient::Impl final
     asio::strand<asio::any_io_executor> strand_;
     std::unique_ptr<coap_context_t, CoapCtxDeleter> ctx_;
     std::unique_ptr<coap_session_t, CoapSessionDeleter> session_;
+    std::mutex large_data_mtx_;
     struct
     {
-        std::mutex mtx;
         size_t id_counter;
         std::map<size_t, std::vector<uint8_t>> buffer;
     } large_data_;
@@ -433,7 +435,7 @@ void CoapClient::getWellKnown(const std::string path)
 void CoapClient::makeRequest(const Method method,
                              const std::string &path,
                              const RequestId id,
-                             const std::span<uint8_t> data)
+                             const std::span<const uint8_t> data)
 {
     impl_->sendRequest(path, method, id, data);
 }

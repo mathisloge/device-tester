@@ -1,10 +1,26 @@
+local pb = require "pb"
+local protoc = require "protoc"
+
+protoc.new():load([[
+        syntax = "proto3";
+
+        message LedCtrlSetColor {
+            int32 r = 1;
+            int32 g = 2;
+            int32 b = 3;
+        }
+    ]])
 
 function sendLedColor(rgb_color)
-    local msg_data = {}
-    print("PUT")
-    ledclient:put(1, "test", msg_data)
+    local data = {
+        r = math.floor(rgb_color[1] * 255),
+        g = math.floor(rgb_color[2] * 255),
+        b = math.floor(rgb_color[3] * 255)
+    }
+    local bytes = pb.encode("LedCtrlSetColor", data)
+    print(pb.tohex(bytes))
+    ledclient:put(1, "test", bytes)
 end
-
 
 function onCoapReceive(id, data)
     print("Received ")
@@ -12,13 +28,13 @@ function onCoapReceive(id, data)
     print("SIZE: ", data:size())
 end
 
-local colors = {0.0, 0.1, 0.2} 
+local colors = {0.0, 0.1, 0.2}
 function draw_set_color()
     imgui.text("Select the color the leds should have:")
     colors = imgui.colorEdit3("Color", colors)
 
-    if imgui.button("Set") then    
-        print("SEND")    
+    if imgui.button("Set") then
+        print("SEND")
         sendLedColor(colors)
     end
 end

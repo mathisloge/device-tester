@@ -46,7 +46,7 @@ class LIBCON_EXPORT CoapClient : public BaseConnection
     void makeRequest(const Method method,
                      const std::string &path,
                      const RequestId id,
-                     const std::span<uint8_t> data = {});
+                     const std::span<const uint8_t> data = {});
     sig::connection connectOnReceive(const RxSig::slot_type &sub);
 
     std::string generateReadableName() const override;

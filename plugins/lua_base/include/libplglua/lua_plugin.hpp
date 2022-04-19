@@ -1,9 +1,20 @@
 #pragma once
 #include <filesystem>
+#include <mutex>
+#include <asio.hpp>
 #include <plugin.hpp>
 #include <sol/sol.hpp>
 namespace dev::plg
 {
+struct LuaAccessGuard
+{
+    LuaAccessGuard(asio::io_context &io)
+        : strand{asio::make_strand(io)}
+    {}
+    std::mutex state_mtx_;
+    asio::strand<asio::any_io_executor> strand;
+};
+
 class LuaPlugin final : public Plugin
 {
   public:
@@ -20,6 +31,7 @@ class LuaPlugin final : public Plugin
     void setupActions();
 
   private:
+    LuaAccessGuard guard_;
     sol::state lua_;
 
     std::string name_;
