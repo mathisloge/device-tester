@@ -124,7 +124,7 @@ class CoapClient::Impl final
         {
             spdlog::error("cannot add token to request");
         }
-        
+
         coap_add_optlist_pdu(pdu, &optlist);
         if (data.size() > 0)
         {
@@ -396,11 +396,6 @@ class CoapClient::Impl final
     RxSig rx_signal_;
 };
 
-void CoapClient::DiscoverServers()
-{
-    ensure_coap();
-}
-
 int CoapClient::DefaultPort()
 {
     return COAP_DEFAULT_PORT;
@@ -448,6 +443,21 @@ std::string CoapClient::generateReadableName() const
 sig::connection CoapClient::connectOnReceive(const RxSig::slot_type &sub)
 {
     return impl_->rx_signal_.connect(sub);
+}
+
+void CoapClient::DiscoverServers(Manager &manager, const std::string_view multicast_ip, const uint16_t port)
+{
+    //! todo: make async...
+    ensure_coap();
+    auto c = std::make_shared<CoapClient>(manager);
+    c->setOptions({.server_uri = std::string{multicast_ip}, .server_port = port});
+    // capture c so that it doesn't go out of scope...
+    auto rx_sig = c->connectOnReceive([c](RequestId, std::span<const uint8_t>) { spdlog::info("discovered client!"); });
+    c->getWellKnown();
+    static_assert(COAP_DEFAULT_LEISURE == 5); //! in case it will be changed unnoted
+    asio::steady_timer t{manager.ctx(), std::chrono::seconds(COAP_DEFAULT_LEISURE)};
+    t.wait();
+    rx_sig.disconnect();
 }
 
 } // namespace dev::con

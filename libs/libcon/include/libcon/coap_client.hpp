@@ -11,7 +11,12 @@ namespace dev::con
 class LIBCON_EXPORT CoapClient : public BaseConnection
 {
   public:
-    static void DiscoverServers();
+    //! https://datatracker.ietf.org/doc/html/rfc7252#section-12.8
+    //! IPv4 Addr: 224.0.1.x
+    //! IPv6 Addr: FF0X::FD
+    static void DiscoverServers(Manager &manager,
+                                const std::string_view multicast_ip = "ff02::fd",
+                                const uint16_t port = 5683);
     static int DefaultPort();
     static int DefaultSecurePort();
 
