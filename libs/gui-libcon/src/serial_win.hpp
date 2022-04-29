@@ -23,6 +23,8 @@ class SerialWin final : public ConnectionWin
     WindowManager &win_manager_;
     std::shared_ptr<con::Serial> connection_;
     std::shared_ptr<RawDataWin> raw_win_;
+
+    std::string name_;
     con::Serial::Options opts_;
 };
 } // namespace dev::gui
