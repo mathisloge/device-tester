@@ -12,7 +12,7 @@ target_include_directories(lua-base PRIVATE
     "${LUA_INCLUDE_DIR}"
 )
 target_link_libraries(lua-base PRIVATE 
-    sol2::sol2 
+    sol2 
     spdlog::spdlog
     plugin-base
     imgui::imgui

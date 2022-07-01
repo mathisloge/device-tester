@@ -9,6 +9,7 @@ SerialWin::SerialWin(con::Manager &manager, WindowManager &win_manager)
     , raw_win_{nullptr}
     , opts_{connection_->options()}
 {}
+
 SerialWin::SerialWin(const std::shared_ptr<con::Serial> &connection, WindowManager &win_manager)
     : win_manager_{win_manager}
     , connection_{connection}
@@ -25,6 +26,7 @@ const std::string &SerialWin::title() const
         return kEmptyName;
     return connection_->readableName();
 }
+
 void SerialWin::drawTabSettings()
 {
     static constexpr std::array<std::string_view, 3> kNamesParity{"none", "odd", "even"};
@@ -93,6 +95,7 @@ void SerialWin::drawTabSettings()
         }
     }
 }
+
 void SerialWin::drawTabDetails()
 {
     bool has_raw_win = raw_win_ != nullptr;

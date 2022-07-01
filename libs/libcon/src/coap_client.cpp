@@ -447,6 +447,7 @@ sig::connection CoapClient::connectOnReceive(const RxSig::slot_type &sub)
 
 void CoapClient::DiscoverServers(Manager &manager, const std::string_view multicast_ip, const uint16_t port)
 {
+    constexpr uint16_t kDefaultLeisure = 5; //(COAP_DEFAULT_DEFAULT_LEISURE).integer_part;
     //! todo: make async...
     ensure_coap();
     auto c = std::make_shared<CoapClient>(manager);
@@ -454,8 +455,8 @@ void CoapClient::DiscoverServers(Manager &manager, const std::string_view multic
     // capture c so that it doesn't go out of scope...
     auto rx_sig = c->connectOnReceive([c](RequestId, std::span<const uint8_t>) { spdlog::info("discovered client!"); });
     c->getWellKnown();
-    static_assert(COAP_DEFAULT_LEISURE == 5); //! in case it will be changed unnoted
-    asio::steady_timer t{manager.ctx(), std::chrono::seconds(COAP_DEFAULT_LEISURE)};
+    static_assert(kDefaultLeisure == 5); //! in case it will be changed unnoted
+    asio::steady_timer t{manager.ctx(), std::chrono::seconds(kDefaultLeisure)};
     t.wait();
     rx_sig.disconnect();
 }
